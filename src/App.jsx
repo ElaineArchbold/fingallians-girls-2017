@@ -328,16 +328,26 @@ export default function App() {
     setAllPlayers(data || []);
   }
 
-  async function toggleTask(taskKey, pts, label) {
+ async function toggleTask(taskKey, pts, label) {
     if (!player) return;
     const done = checks[taskKey];
     if (done) {
-      await sb.from("task_completions").delete().eq("player_id", player.id).eq("task_key", taskKey);
-      setChecks(c => { const n={...c}; delete n[taskKey]; return n; });
+      const { error } = await sb
+        .from("task_completions")
+        .delete()
+        .eq("player_id", player.id)
+        .eq("task_key", taskKey);
+      if (!error) {
+        setChecks(c => { const n={...c}; delete n[taskKey]; return n; });
+      }
     } else {
-      await sb.from("task_completions").insert({ player_id: player.id, task_key: taskKey });
-      setChecks(c => ({ ...c, [taskKey]: true }));
-      showToast(`✅ ${label} logged! +${pts} pts`);
+      const { error } = await sb
+        .from("task_completions")
+        .insert({ player_id: player.id, task_key: taskKey });
+      if (!error) {
+        setChecks(c => ({ ...c, [taskKey]: true }));
+        showToast(`✅ ${label} logged! +${pts} pts`);
+      }
     }
   }
 
