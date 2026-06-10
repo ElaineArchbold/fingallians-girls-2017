@@ -2,6 +2,9 @@
   "name": "fingallians-girls",
   "private": true,
   "version": "0.0.0",
+  "engines": {
+    "node": "20.x"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,7 +14,8 @@
   },
   "dependencies": {
     "react": "^19.2.6",
-    "react-dom": "^19.2.6"
+    "react-dom": "^19.2.6",
+    "@supabase/supabase-js": "^2.39.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
