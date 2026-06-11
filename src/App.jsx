@@ -196,8 +196,8 @@ body{font-family:'Lato',sans-serif;background:var(--bg);color:var(--dark);min-he
 .wk-hero-hd h2{font-family:'Barlow Condensed',sans-serif;font-size:28px;letter-spacing:0.02em}
 .wk-hero-hd .sport-badge{font-size:13px;font-weight:700;margin-top:4px}
 .wk-hero-hd .wk-dates{font-size:12px;opacity:0.65;margin-top:2px}
-.runs-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-.run-chip{font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:rgba(0,0,0,0.08);cursor:pointer;transition:all 0.15s;border:2px solid transparent}
+.runs-chips{display:flex;flex-wrap:nowrap;gap:6px;margin-top:10px;justify-content:center;width:100%}
+.run-chip{font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:rgba(0,0,0,0.08);cursor:pointer;transition:all 0.15s;border:2px solid transparent;flex:1;text-align:center;white-space:nowrap;min-width:0}
 .run-chip.done{background:var(--g);color:white;border-color:var(--g)}
 .run-chip:hover:not(.done){background:rgba(0,0,0,0.14)}
 .prog-bar-bg{height:6px;background:#f0dede;border-radius:3px;overflow:hidden;margin:12px 18px 4px}
@@ -328,26 +328,16 @@ export default function App() {
     setAllPlayers(data || []);
   }
 
- async function toggleTask(taskKey, pts, label) {
+  async function toggleTask(taskKey, pts, label) {
     if (!player) return;
     const done = checks[taskKey];
     if (done) {
-      const { error } = await sb
-        .from("task_completions")
-        .delete()
-        .eq("player_id", player.id)
-        .eq("task_key", taskKey);
-      if (!error) {
-        setChecks(c => { const n={...c}; delete n[taskKey]; return n; });
-      }
+      await sb.from("task_completions").delete().eq("player_id", player.id).eq("task_key", taskKey);
+      setChecks(c => { const n={...c}; delete n[taskKey]; return n; });
     } else {
-      const { error } = await sb
-        .from("task_completions")
-        .insert({ player_id: player.id, task_key: taskKey });
-      if (!error) {
-        setChecks(c => ({ ...c, [taskKey]: true }));
-        showToast(`✅ ${label} logged! +${pts} pts`);
-      }
+      await sb.from("task_completions").insert({ player_id: player.id, task_key: taskKey });
+      setChecks(c => ({ ...c, [taskKey]: true }));
+      showToast(`✅ ${label} logged! +${pts} pts`);
     }
   }
 
@@ -528,7 +518,7 @@ function AuthScreen({ showToast }) {
                 </div>
                 <div className="tc-section">
                   <strong>Data & Privacy</strong>
-                  <p>To use this app we store your child's first and last name and your email address. No other personal information is collected or stored. Your data is not shared with any third party and is used solely to manage participation in the 2026 Summer Challenge. You can request deletion of your data at any time by emailing <strong>Fingallians2015GirlsChallenge@gmail.comm</strong>.</p>
+                  <p>To use this app we store your child's first and last name and your email address. No other personal information is collected or stored. Your data is not shared with any third party and is used solely to manage participation in the 2026 Summer Challenge. You can request deletion of your data at any time by emailing <strong>fingallians2014boys@gmail.com</strong>.</p>
                 </div>
                 <div className="tc-section">
                   <strong>Participation</strong>
@@ -656,8 +646,8 @@ function HomeTab({ player, checks, pts, weeksDone, onNav, onToggle }) {
         <div style={{fontSize:13,opacity:0.85,lineHeight:1.6,marginBottom:10}}>
           Filmed yourself practising? Send your videos to the coaches — we'd love to see the girls putting in the work!
         </div>
-        <a href="mailto:Fingallians2015GirlsChallenge@gmail.comm" style={{display:"inline-block",background:"var(--gold)",color:"var(--dark)",fontFamily:"'Barlow Condensed',sans-serif",fontSize:15,letterSpacing:"0.04em",fontWeight:900,padding:"8px 16px",borderRadius:20,textDecoration:"none"}}>
-          📧 Fingallians2015GirlsChallenge@gmail.comm
+        <a href="mailto:fingallians2014boys@gmail.com" style={{display:"inline-block",background:"var(--gold)",color:"var(--dark)",fontFamily:"'Barlow Condensed',sans-serif",fontSize:15,letterSpacing:"0.04em",fontWeight:900,padding:"8px 16px",borderRadius:20,textDecoration:"none"}}>
+          📧 fingallians2014boys@gmail.com
         </a>
       </div>
       <div style={{textAlign:"center",marginTop:14,paddingBottom:8}}>
@@ -807,7 +797,7 @@ function PlanTab({ checks, onToggle, player }) {
         </div>
         <div className="tc-section">
           <strong>Data & Privacy</strong>
-          <p>To use this app we store your child's first and last name and your email address. No other personal information is collected or stored. Your data is not shared with any third party and is used solely to manage participation in the 2026 Summer Challenge. You can request deletion of your data at any time by emailing <strong>Fingallians2015GirlsChallenge@gmail.comm</strong>.</p>
+          <p>To use this app we store your child's first and last name and your email address. No other personal information is collected or stored. Your data is not shared with any third party and is used solely to manage participation in the 2026 Summer Challenge. You can request deletion of your data at any time by emailing <strong>fingallians2014boys@gmail.com</strong>.</p>
         </div>
         <div className="tc-section">
           <strong>Participation</strong>
