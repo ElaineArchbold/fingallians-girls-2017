@@ -1,9 +1,13 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL      = "https://rzjaxsfqdajnncfdwemq.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_F7tdlTdu7-vYWkNynXW94g_mgzDZ-O_";
-const ADMIN_EMAIL       = "e.t.archbold@gmail.com";
+const ADMIN_EMAILS = [
+  "e.t.archbold@gmail.com",
+];
+
+const ADMIN_PLAYER_NAMES = {};
 
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -14,8 +18,8 @@ const WEEKS = [
     week:1, phase:"Foundation", dates:"Jun 29–Jul 5",
     runs:[{label:"Run 1",distance:"1.5k"},{label:"Run 2",distance:"1.5k"},{label:"Run 3",distance:"2k"}],
     skills:[
-      {id:"c1a",label:"🏑 Camogie Skills & Drills",desc:"15 mins at the ball wall: striking off both sides, aim for below shoulder height. Count clean strikes in a row.",youtube_id:"UEFHWItrOD0"},
-      {id:"f1a",label:"⚽ LGFA – The Punt Kick",desc:"15 mins: kick-pass off the wall, catch on the return. Focus on clean first touch. Try both feet.",youtube_id:"jhCo_NP8T_A"},
+      {id:"c1a",label:"🏑 Strike from the Hand",desc:"15 mins at the ball wall: striking off both sides, aim for below shoulder height. Count clean strikes in a row.",youtube_id:"jzwskF82xIk"},
+      {id:"f1a",label:"⚽ Punt Kick",desc:"15 mins: punt kick off the wall, catch on the return. Focus on clean first touch. Try both feet.",youtube_id:"z1dLhAL4vi8"},
     ],
     squad:{label:"Squad Session – Striking & Kick-Pass",desc:"Get 3–4 girls together. First 10 mins: camogie striking at the wall, count clean strikes. Then 10 mins: football kick-pass pairs, count clean catches. Record both scores!",youtube_id:"pm5sdhJcd-Q"},
   },
@@ -23,8 +27,8 @@ const WEEKS = [
     week:2, phase:"Foundation", dates:"Jul 6–12",
     runs:[{label:"Run 1",distance:"1.5k"},{label:"Run 2",distance:"2k"},{label:"Run 3",distance:"2k"}],
     skills:[
-      {id:"c2a",label:"🏑 Camogie – First Touch Drill",desc:"20 mins: ground ball, first touch and lift immediately, flick to the wall. Build reactions and speed.",youtube_id:"aIoMXfH-tNU"},
-      {id:"f2a",label:"⚽ LGFA – The Solo",desc:"Solo the ball 20m without dropping it. Try both feet. Count clean solos in a row — record your best!",youtube_id:"2dAYRDt1g5M"},
+      {id:"c2a",label:"🏑 Roll Lift",desc:"20 mins: roll the sliotar along the ground, scoop it up cleanly with the hurl. Practise off both sides.",youtube_id:"uO5Z21QjPMQ"},
+      {id:"f2a",label:"⚽ Hook Kick and Dummy Solo",desc:"Solo the ball, add a dummy step, then hook kick. Try both feet. Count clean sequences in a row.",youtube_id:"UzqN2U5Rdls"},
     ],
     squad:{label:"Squad Session – First Touch & Solo Relay",desc:"Two challenges: (1) Camogie: first touch relay — 3 girls in a line, roll sliotar, first touch and flick on. Drops = restart. Clean rounds in 5 mins? (2) Football: solo relay — each girl solos 20m and back. Count drops. Can you get zero?",youtube_id:"UEFHWItrOD0"},
   },
@@ -32,8 +36,8 @@ const WEEKS = [
     week:3, phase:"Building", dates:"Jul 13–19",
     runs:[{label:"Run 1",distance:"2k"},{label:"Run 2",distance:"2k"},{label:"Run 3",distance:"2.5k"}],
     skills:[
-      {id:"c3a",label:"🏑 Camogie – Box to Box Drill",desc:"10 frees from the 21m line. Count how many go over. Record your score — coaches will retest in September!",youtube_id:"u86Kk2iH2tE"},
-      {id:"f3a",label:"⚽ LGFA – The High Catch",desc:"8 shots from different spots around the D. Count your score. Can you get 5+ out of 8?",youtube_id:"WxqVqxyFLhM"},
+      {id:"c3a",label:"🏑 Jab Lift",desc:"10 jab lifts in a row without dropping. Then try moving — lift on the run. Record your best streak.",youtube_id:"0tmM594_gak"},
+      {id:"f3a",label:"⚽ Bounce, Solo and Change of Direction",desc:"Bounce, solo, change direction. Keep the ball under control. How many clean sequences in 2 mins?",youtube_id:"zMV-ReshSVU"},
     ],
     squad:{label:"Squad Session – Free Taking Competition",desc:"Two rounds: (1) Camogie: each girl takes 5 frees from the 21 — group total. (2) Football: each girl takes 5 shots from the D — group total. Record both — coaches will retest in September!",youtube_id:"CAHGBytDaGw"},
   },
@@ -41,8 +45,8 @@ const WEEKS = [
     week:4, phase:"Building", dates:"Jul 20–26",
     runs:[{label:"Run 1",distance:"2k"},{label:"Run 2",distance:"2.5k"},{label:"Run 3",distance:"2.5k"}],
     skills:[
-      {id:"c4a",label:"🏑 Camogie Volleyball Drill",desc:"20 mins: overhead, ground and close-range striking mixed. No stopping to reset between touches.",youtube_id:"DEnfkwQeAHI"},
-      {id:"f4a",label:"⚽ LGFA – The Pick Up",desc:"20 mins: fist-pass to wall, catch, kick-pass. Mix both feet and hands. Keep moving the whole time.",youtube_id:"f0NhadkjpUM"},
+      {id:"c4a",label:"🏑 Hook",desc:"20 mins: practise the hook — timing and hand position. Challenge a teammate if you can!",youtube_id:"P_5R-pXVqcs"},
+      {id:"f4a",label:"⚽ Decision Making and Passing",desc:"20 mins: passing drill — read the play, pick your pass. Mix hand-pass and kick-pass. Move after every pass.",youtube_id:"pPxInUTHroM"},
     ],
     squad:{label:"Squad Session – Score Hunt",desc:"At any goals: (1) Camogie: each girl takes 5 pucks from 20m — group total? (2) Football: each girl takes 5 shots from the D — group total? Target: 12+ out of 20 each. Keep the scores!",youtube_id:"CAHGBytDaGw"},
   },
@@ -50,8 +54,8 @@ const WEEKS = [
     week:5, phase:"Push", dates:"Jul 27–Aug 2",
     runs:[{label:"Run 1",distance:"2.5k"},{label:"Run 2",distance:"2.5k"},{label:"Run 3",distance:"3k"}],
     skills:[
-      {id:"c5a",label:"🏑 Camogie – Martin Fogarty Drills",desc:"5 attempts from the 45m line. Score out of 5. Repeat on the other side. Coaches will test this in September!",youtube_id:"pm5sdhJcd-Q"},
-      {id:"f5a",label:"⚽ LGFA – Kicking Mechanics",desc:"Timed drill: solo 30m, turn, shoot. Record your time. Try to beat it by end of the week.",youtube_id:"8y8DAtcsSnw"},
+      {id:"c5a",label:"🏑 Block on the Ground",desc:"Practise blocking the sliotar on the ground — body position, timing, safe technique.",youtube_id:"Uq3HsM6bFvo"},
+      {id:"f5a",label:"⚽ Obstacle Course",desc:"Set up cones — solo through, shoot at the end. Time yourself. Beat your time by end of the week.",youtube_id:"yCUWUAnism4"},
     ],
     squad:{label:"Squad Session – 45 & Score Chase",desc:"(1) Camogie: each girl takes 5 attempts from the 45 — group total both sides. (2) Football: 3-girl weave, pass and follow up the pitch, finish with a score. How many in 5 mins? Record everything.",youtube_id:"CAHGBytDaGw"},
   },
@@ -59,8 +63,8 @@ const WEEKS = [
     week:6, phase:"Push", dates:"Aug 3–9",
     runs:[{label:"Run 1",distance:"2.5k"},{label:"Run 2",distance:"3k"},{label:"Run 3",distance:"3k"}],
     skills:[
-      {id:"c6a",label:"🏑 Camogie – U11/U13 Coaching Drills",desc:"25 mins at full pace. Strike, receive, strike again. No slow touches. Do this AFTER a run for extra challenge.",youtube_id:"v4vDsKw-qow"},
-      {id:"f6a",label:"⚽ LGFA Training Ideas",desc:"3 girls across the pitch, pass and follow your pass. Weave to goal, finish with a score. How many in 5 mins?",youtube_id:"CAHGBytDaGw"},
+      {id:"c6a",label:"🏑 Frontal Block",desc:"25 mins at full pace: frontal blocking drills. Safe technique first — then build speed.",youtube_id:"pFOXDqLbD7g"},
+      {id:"f6a",label:"⚽ The Body Catch",desc:"Practise the body catch — take the ball into the chest, secure it. Work off both sides.",youtube_id:"8loHSEuEJx8"},
     ],
     squad:{label:"Squad Session – Puck-Around & Weave",desc:"(1) Camogie: 2v2 near the goal, one side attacks for 3 mins, count scores, swap. (2) Football: 3-girl weave timed challenge — how many scores in 5 mins as a group? Record both.",youtube_id:"UEFHWItrOD0"},
   },
@@ -68,8 +72,8 @@ const WEEKS = [
     week:7, phase:"Peak", dates:"Aug 10–16",
     runs:[{label:"Run 1",distance:"3k"},{label:"Run 2",distance:"3k"},{label:"Run 3",distance:"3.5k"}],
     skills:[
-      {id:"c7a",label:"🏑 Camogie – First Touch & Control",desc:"Most accurate camogie frees from 20m in a row without a miss. Personal best — beat it!",youtube_id:"aIoMXfH-tNU"},
-      {id:"f7a",label:"⚽ LGFA – The Hook Kick",desc:"10 shots — 5 from left, 5 from right foot, 13m out. Count your score. Can you get 6+ out of 10?",youtube_id:"yEViD8o4ZWI"},
+      {id:"c7a",label:"🏑 Overhead Catch",desc:"Most accurate camogie frees from 20m in a row. Then overhead catching — time it with a partner.",youtube_id:"AhAH2ijnepY"},
+      {id:"f7a",label:"⚽ The Roll Off",desc:"Practise the roll off — shoulder, turn, accelerate. Left and right. How many clean in a row?",youtube_id:"7NgYaavj7Ko"},
     ],
     squad:{label:"Squad Session – Peak Challenge",desc:"(1) Camogie: each girl does 10 frees from 20m — group total. Compare to Week 3! (2) Football: each girl does 10 shots, 5 each foot — group total. Compare to Week 3! How much has the team improved?",youtube_id:"CAHGBytDaGw"},
   },
@@ -77,8 +81,8 @@ const WEEKS = [
     week:8, phase:"Peak", dates:"Aug 17–23",
     runs:[{label:"Run 1",distance:"3k"},{label:"Run 2",distance:"3.5k"},{label:"Run 3",distance:"3.5k"}],
     skills:[
-      {id:"c8a",label:"🏑 Camogie – Final Session",desc:"30 mins — full pace, both sides, ground and overhead. Leave nothing. Final session before assessment!",youtube_id:"UEFHWItrOD0"},
-      {id:"f8a",label:"⚽ LGFA – The Solo (Final Test)",desc:"Solo the ball 20m clean, both feet. Compare to Week 2. Then kick for score — compare to Week 3. How far have you come?",youtube_id:"2dAYRDt1g5M"},
+      {id:"c8a",label:"🏑 Solo",desc:"30 mins — full pace, solo the sliotar end to end both sides. Final session before assessment!",youtube_id:"jhs9YPfh10Y"},
+      {id:"f8a",label:"⚽ The Hook Kick",desc:"Solo the ball 20m clean, both feet. Compare to Week 2. Then hook kick for score — compare to Week 3.",youtube_id:"yEViD8o4ZWI"},
     ],
     squad:{label:"Squad Session – Final Challenge",desc:"Re-run Week 2: (1) Camogie first touch relay — clean rounds in 5 mins? (2) Football solo relay — group drops count. Compare BOTH to Week 2. Screenshot and send to the coaches! 📸",youtube_id:"CAHGBytDaGw"},
   },
@@ -134,7 +138,7 @@ const CSS = `
   --shadow-lg:0 8px 40px rgba(163,22,33,0.18);
 }
 body{font-family:'Lato',sans-serif;background:var(--bg);color:var(--dark);min-height:100vh;-webkit-font-smoothing:antialiased}
-.shell{max-width:480px;margin:0 auto;padding-bottom:88px}
+.shell{max-width:480px;width:100%;margin:0 auto;padding-bottom:88px}
 .hdr{background:var(--g);padding:18px 18px 0;position:sticky;top:0;z-index:100;border-bottom:3px solid var(--gold)}
 .hdr-row{display:flex;align-items:center;gap:12px;padding-bottom:14px}
 .crest{width:50px;height:50px;border-radius:50%;overflow:hidden;flex-shrink:0;box-shadow:0 0 0 2px var(--gold),0 0 0 4px rgba(255,255,255,0.15);background:white}
@@ -142,8 +146,8 @@ body{font-family:'Lato',sans-serif;background:var(--bg);color:var(--dark);min-he
 .hdr-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;color:white;line-height:1;letter-spacing:0.03em}
 .hdr-sub{font-size:11px;color:rgba(255,255,255,0.65);margin-top:2px}
 .hdr-player{font-size:12px;color:var(--gold2);font-weight:700;margin-top:2px}
-.tabs{display:flex;gap:3px}
-.tab-btn{flex:1;padding:10px 2px;border:none;border-radius:10px 10px 0 0;font-family:'Barlow Condensed',sans-serif;font-size:14px;letter-spacing:0.04em;cursor:pointer;background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.65);transition:all 0.15s;border-bottom:3px solid transparent}
+.tabs{display:flex;gap:3px;width:100%}
+.tab-btn{flex:1;min-width:0;padding:10px 2px;border:none;border-radius:10px 10px 0 0;font-family:'Barlow Condensed',sans-serif;font-size:clamp(11px,3vw,15px);letter-spacing:0.02em;cursor:pointer;background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.65);transition:all 0.15s;border-bottom:3px solid transparent;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tab-btn.active{background:var(--bg);color:var(--g);font-size:15px;border-bottom:3px solid var(--bg)}
 .auth-wrap{padding:24px 18px}
 .auth-hero{background:var(--g);border-radius:var(--radius);padding:30px 24px 26px;margin-bottom:18px;color:white;position:relative;overflow:hidden;text-align:center}
@@ -172,7 +176,7 @@ body{font-family:'Lato',sans-serif;background:var(--bg);color:var(--dark);min-he
 .btn-danger{background:#8b0000;color:white;font-size:16px}
 .err{font-size:13px;color:#a31621;margin-bottom:10px;padding:10px 13px;background:#fde8ea;border-radius:8px}
 .link-btn{background:none;border:none;color:var(--g);font-family:'Lato',sans-serif;font-size:14px;font-weight:700;cursor:pointer;text-decoration:underline;padding:0}
-.home-wrap{padding:14px 16px}
+.home-wrap{padding:14px 16px;width:100%;box-sizing:border-box}
 .welcome-card{background:linear-gradient(135deg,var(--g) 0%,var(--g2) 100%);border-radius:var(--radius);padding:22px 20px;margin-bottom:14px;color:white;position:relative;overflow:hidden}
 .welcome-card::after{content:'🏑';position:absolute;right:-8px;bottom:-12px;font-size:100px;opacity:0.08;pointer-events:none}
 .welcome-card h2{font-family:'Barlow Condensed',sans-serif;font-size:32px;color:white;letter-spacing:0.02em}
@@ -240,7 +244,7 @@ body{font-family:'Lato',sans-serif;background:var(--bg);color:var(--dark);min-he
 .squad-mark{width:100%;padding:11px;border:none;border-radius:10px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:18px;letter-spacing:0.05em;transition:all 0.2s;background:var(--gold);color:var(--dark)}
 .squad-mark:hover{background:#b88a10}
 .squad-mark.done{background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.7)}
-.admin-wrap{padding:14px 16px}
+.admin-wrap{padding:14px 16px;width:100%;box-sizing:border-box}
 .admin-banner{background:var(--dark);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;display:flex;align-items:center;gap:12px}
 .admin-banner h2{font-family:'Barlow Condensed',sans-serif;font-size:24px;color:var(--gold);letter-spacing:0.03em}
 .admin-banner p{font-size:12px;color:rgba(255,255,255,0.55);margin-top:2px}
@@ -302,7 +306,7 @@ export default function App() {
   useEffect(() => {
     if (!session) { setPlayer(null); setChecks({}); return; }
     loadPlayerData();
-    if (session.user.email === ADMIN_EMAIL) loadAllPlayers();
+    if (ADMIN_EMAILS.includes(session.user.email)) loadAllPlayers();
   }, [session]);
 
   async function loadPlayerData() {
@@ -348,7 +352,7 @@ export default function App() {
     setTab("home");
   }
 
-  const isAdmin = session?.user?.email === ADMIN_EMAIL;
+  const isAdmin = ADMIN_EMAILS.includes(session?.user?.email);
   const pts     = totalPts(checks);
   const weeksDone = WEEKS.filter(w => weekPts(w, checks) === weekMaxPts(w)).length;
 
@@ -358,10 +362,11 @@ export default function App() {
   );
 
   const TABS = [
-    { id:"home", label:"Home" },
-    { id:"plan", label:"Plan" },
-    { id:"scores", label:"Scores" },
-    ...(isAdmin ? [{ id:"admin", label:"⚙️ Admin" }] : []),
+    { id:"home",     label:"Home"     },
+    { id:"plan",     label:"Plan"     },
+    { id:"progress", label:"Progress" },
+    ...(isAdmin ? [{ id:"coaches", label:"Coaches" }] : []),
+    ...(isAdmin ? [{ id:"admin",   label:"Admin"   }] : []),
   ];
 
   return (
@@ -398,9 +403,14 @@ export default function App() {
         {session && (player || isAdmin) && tab === "plan" && (
           <PlanTab checks={checks} onToggle={toggleTask} player={player} />
         )}
-        {session && (player || isAdmin) && tab === "scores" && (
-          <ScoresTab player={player} />
+        {session && (player || isAdmin) && tab === "progress" && (
+          <ProgressTab player={player} checks={checks} isAdmin={isAdmin} />
         )}
+
+        {session && isAdmin && tab === "coaches" && (
+          <CoachesTab allPlayers={allPlayers} coachEmail={session.user.email} showToast={showToast} />
+        )}
+
         {session && isAdmin && tab === "admin" && (
           <AdminTab allPlayers={allPlayers} session={session} onRefresh={loadAllPlayers} showToast={showToast} />
         )}
@@ -808,7 +818,314 @@ function PlanTab({ checks, onToggle, player }) {
   );
 }
 
-function ScoresTab({ player }) {
+// ── ProgressTab ───────────────────────────────────────────────────────────────
+// Shows the logged-in player's own progress: KMs run + skills practised per week
+function ProgressTab({ player, checks, isAdmin }) {
+  const [completions, setCompletions] = useState([]); // [{task_key, completed_at}]
+  const [loading, setLoading]         = useState(true);
+
+  // Fetch completions WITH timestamps for this player
+  useEffect(() => {
+    if (!player) { setLoading(false); return; }
+    sb.from("task_completions")
+      .select("task_key, completed_at")
+      .eq("player_id", player.id)
+      .order("completed_at", { ascending: false })
+      .then(({ data }) => {
+        setCompletions(data || []);
+        setLoading(false);
+      });
+  }, [player?.id]);
+
+  // ── Derived stats ──────────────────────────────────────────
+  const stats = useMemo(() => {
+    let sessions = 0, minutes = 0, pts = 0;
+    let totalKm = 0;
+
+    // minutes per activity type (from desc text or fixed values)
+    const runMins   = 20;  // average per run
+    const skillMins = 20;  // average per skill session
+    const squadMins = 20;  // squad session
+
+    WEEKS.forEach(w => {
+      w.runs.forEach((r, i) => {
+        if (checks[runKey(w.week, i)]) {
+          sessions++; minutes += runMins; pts += PTS.run;
+          totalKm += parseFloat(r.distance) || 0;
+        }
+      });
+      w.skills.forEach(s => {
+        if (checks[skillKey(w.week, s.id)]) {
+          sessions++; minutes += skillMins; pts += PTS.skill;
+        }
+      });
+      if (checks[squadKey(w.week)]) {
+        sessions++; minutes += squadMins; pts += PTS.squad;
+      }
+    });
+    return { sessions, minutes, pts, totalKm };
+  }, [checks]);
+
+  // ── Weekly activity for bar chart ─────────────────────────
+  const weeklyData = useMemo(() => {
+    return WEEKS.map(w => {
+      let runs = 0, skills = 0, squad = 0;
+      w.runs.forEach((_, i) => { if (checks[runKey(w.week, i)])   runs++; });
+      w.skills.forEach(s    => { if (checks[skillKey(w.week, s.id)]) skills++; });
+      if (checks[squadKey(w.week)]) squad = 1;
+      const total   = runs + skills + squad;
+      const maxPoss = w.runs.length + w.skills.length + 1;
+      return { week: w.week, runs, skills, squad, total, maxPoss };
+    });
+  }, [checks]);
+
+  // ── Activity log — map task_key → human label + date ──────
+  const activityLog = useMemo(() => {
+    return completions.map(c => {
+      const k = c.task_key;
+      let label = "", type = "other", week = null;
+
+      WEEKS.forEach(w => {
+        w.runs.forEach((r, i) => {
+          if (runKey(w.week, i) === k) {
+            label = `${r.label} (${r.distance})`;
+            type  = "run"; week = w.week;
+          }
+        });
+        w.skills.forEach(s => {
+          if (skillKey(w.week, s.id) === k) {
+            label = s.label.replace(/^[^\w]+/, "").split(":")[0].trim();
+            type  = "skill"; week = w.week;
+          }
+        });
+        if (squadKey(w.week) === k) {
+          label = `Squad Session`; type = "squad"; week = w.week;
+        }
+      });
+
+      const date = c.completed_at
+        ? new Date(c.completed_at).toLocaleDateString("en-IE", { day:"numeric", month:"short", year:"numeric" })
+        : null;
+
+      return { label, type, week, date, key: k };
+    }).filter(a => a.label); // skip any unrecognised keys
+  }, [completions]);
+
+  // ── Colour + icon per type ─────────────────────────────────
+  const typeStyle = {
+    run:   { color:"var(--g)",  bg:"var(--g3)",  icon:"🏃" },
+    skill: { color:"#2e7d32",   bg:"#e8f5e9",    icon:"🏑" },
+    squad: { color:"#c45e00",   bg:"#fff3e0",    icon:"👥" },
+  };
+
+  const maxWeekActivity = Math.max(...weeklyData.map(w => w.maxPoss), 1);
+
+  if (!player) return (
+    <div className="home-wrap" style={{textAlign:"center",paddingTop:40,color:"var(--muted)"}}>
+      <div style={{fontSize:40,marginBottom:12}}>👤</div>
+      <div style={{fontSize:14}}>No player linked yet.</div>
+    </div>
+  );
+
+  return (
+    <div className="home-wrap">
+
+      {/* ── Player banner ── */}
+      <div style={{background:"linear-gradient(135deg,var(--g),#4a0a0e)",borderRadius:"var(--radius)",
+                   padding:"16px 18px",marginBottom:14,color:"#fff",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",right:-8,bottom:-10,fontSize:70,opacity:0.07}}>🏃</div>
+        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:26,color:"var(--gold)",letterSpacing:"0.02em"}}>
+          {player.name.split(" ")[0]}'s Progress
+        </div>
+        <div style={{fontSize:11,opacity:0.65,marginTop:2}}>Fingallians 2014 · Summer Challenge 2026</div>
+        {isAdmin && (
+          <div style={{fontSize:10,marginTop:4,background:"rgba(255,255,255,.12)",
+                       display:"inline-block",padding:"2px 8px",borderRadius:10,
+                       color:"rgba(255,255,255,.75)"}}>
+            👁 Viewing as admin
+          </div>
+        )}
+      </div>
+
+      {/* ── 3 stat boxes ── */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:16,width:"100%"}}>
+        {[
+          { label:"Sessions\nLogged",    value: stats.sessions, suffix:"",     color:"var(--g)",  icon:"✅" },
+          { label:"Minutes\nActive",     value: stats.minutes,  suffix:" min", color:"#2e7d32",   icon:"⏱" },
+          { label:"Total\nPoints",       value: stats.pts,      suffix:" pts", color:"#b8860b",   icon:"⭐" },
+        ].map(s => (
+          <div key={s.label} style={{background:"white",borderRadius:12,padding:"12px 8px",
+                                     textAlign:"center",border:"1px solid #f0dede"}}>
+            <div style={{fontSize:20}}>{s.icon}</div>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:28,
+                         color:s.color,lineHeight:1,marginTop:4}}>
+              {s.value}{s.suffix}
+            </div>
+            <div style={{fontSize:10,color:"var(--muted)",marginTop:3,
+                         whiteSpace:"pre-line",lineHeight:1.3}}>
+              {s.label}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Weekly activity bar chart ── */}
+      <div style={{background:"white",borderRadius:14,padding:"14px",marginBottom:14,
+                   border:"1px solid #f0dede",width:"100%"}}>
+        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",
+                     letterSpacing:"0.04em",marginBottom:12}}>WEEKLY ACTIVITY</div>
+
+        {/* Legend */}
+        <div style={{display:"flex",gap:12,marginBottom:10,flexWrap:"wrap"}}>
+          {[["var(--g)","Runs"],["#2e7d32","Skills"],["#c45e00","Squad"]].map(([c,l]) => (
+            <div key={l} style={{display:"flex",alignItems:"center",gap:4}}>
+              <div style={{width:10,height:10,borderRadius:2,background:c,flexShrink:0}}/>
+              <span style={{fontSize:10,color:"var(--muted)"}}>{l}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Bars */}
+        <div style={{display:"flex",gap:4,alignItems:"flex-end",height:80}}>
+          {weeklyData.map(w => {
+            const barH    = Math.max((w.total / maxWeekActivity) * 72, w.total > 0 ? 4 : 0);
+            const runH    = (w.runs   / w.total || 0) * barH;
+            const skillH  = (w.skills / w.total || 0) * barH;
+            const squadH  = (w.squad  / w.total || 0) * barH;
+            const allDone = w.total === w.maxPoss;
+            return (
+              <div key={w.week} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
+                {/* Stacked bar */}
+                <div style={{width:"100%",display:"flex",flexDirection:"column",
+                             justifyContent:"flex-end",height:72,gap:1}}>
+                  {w.squad > 0 && (
+                    <div style={{width:"100%",height:Math.max(squadH,2),background:"#c45e00",
+                                 borderRadius:"2px 2px 0 0",minHeight:3}}/>
+                  )}
+                  {w.skills > 0 && (
+                    <div style={{width:"100%",height:Math.max(skillH,2),background:"#2e7d32",minHeight:3}}/>
+                  )}
+                  {w.runs > 0 && (
+                    <div style={{width:"100%",height:Math.max(runH,2),background:"var(--g)",
+                                 borderRadius: w.skills === 0 && w.squad === 0 ? "2px 2px 0 0" : 0,
+                                 minHeight:3}}/>
+                  )}
+                  {w.total === 0 && (
+                    <div style={{width:"100%",height:3,background:"#f0dede",borderRadius:2}}/>
+                  )}
+                </div>
+                {/* Week label */}
+                <div style={{fontSize:9,color: allDone ? "var(--g)" : "var(--muted)",
+                             fontWeight: allDone ? 700 : 400}}>
+                  W{w.week}{allDone ? "✓" : ""}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* KM total */}
+        {stats.totalKm > 0 && (
+          <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid #f0e8e8",
+                       display:"flex",alignItems:"center",gap:6}}>
+            <span style={{fontSize:18}}>🏃</span>
+            <div>
+              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:20,
+                            color:"var(--g)",fontWeight:700}}>{stats.totalKm.toFixed(1)} km</span>
+              <span style={{fontSize:11,color:"var(--muted)",marginLeft:6}}>total distance run</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Activity log ── */}
+      <div style={{background:"white",borderRadius:14,padding:"14px",
+                   border:"1px solid #f0dede",width:"100%"}}>
+        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",
+                     letterSpacing:"0.04em",marginBottom:12}}>ACTIVITY LOG</div>
+
+        {loading && (
+          <div style={{textAlign:"center",color:"var(--muted)",padding:"16px 0",fontSize:13}}>Loading…</div>
+        )}
+
+        {!loading && activityLog.length === 0 && (
+          <div style={{textAlign:"center",color:"var(--muted)",padding:"16px 0",fontSize:13}}>
+            No sessions logged yet — get out there! 🏃
+          </div>
+        )}
+
+        {!loading && activityLog.map((a, i) => {
+          const ts = typeStyle[a.type] || typeStyle.skill;
+          return (
+            <div key={i} style={{display:"flex",alignItems:"center",gap:10,
+                                  padding:"9px 0",
+                                  borderBottom: i < activityLog.length-1 ? "1px solid #f8f0f0" : "none"}}>
+              {/* Icon badge */}
+              <div style={{width:32,height:32,borderRadius:"50%",background:ts.bg,
+                           display:"flex",alignItems:"center",justifyContent:"center",
+                           fontSize:16,flexShrink:0}}>
+                {ts.icon}
+              </div>
+              {/* Label + week */}
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:600,color:"var(--dark)",lineHeight:1.3}}>
+                  {a.label}
+                </div>
+                {a.week && (
+                  <div style={{fontSize:10,color:"var(--muted)",marginTop:1}}>
+                    Week {a.week}
+                  </div>
+                )}
+              </div>
+              {/* Date */}
+              {a.date && (
+                <div style={{fontSize:11,color:"var(--muted)",textAlign:"right",flexShrink:0}}>
+                  {a.date}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{textAlign:"center",fontSize:12,color:"var(--muted)",marginTop:14,lineHeight:1.7}}>
+        🏆 Most Improved Player prize at end of summer<br/>
+        Keep logging to stay in the running!
+      </div>
+    </div>
+  );
+}
+
+// ── CoachesTab ────────────────────────────────────────────────────────────────
+function CoachesTab({ allPlayers, coachEmail, showToast }) {
+  const [sub, setSub] = useState("leaderboard");
+  const subTabs = [
+    { id:"leaderboard", label:"Leaderboard" },
+    { id:"fitness",     label:"Testing"     },
+  ];
+  return (
+    <div className="admin-wrap">
+      <div style={{display:"flex",borderRadius:10,overflow:"hidden",
+                   border:"2px solid #a31621",marginBottom:16}}>
+        {subTabs.map(t => (
+          <button key={t.id} onClick={() => setSub(t.id)} style={{
+            flex:1, padding:"9px 6px", border:"none", cursor:"pointer",
+            fontFamily:"inherit", fontSize:13, fontWeight:700,
+            background: sub===t.id ? "#a31621" : "#fff",
+            color:      sub===t.id ? "#fff"    : "#a31621",
+            opacity:    sub===t.id ? 1         : 0.5,
+            transition:"all 0.15s",
+          }}>{t.label}</button>
+        ))}
+      </div>
+      {sub === "leaderboard" && <ScoresTab />}
+      {sub === "fitness"     && <FitnessTab allPlayers={allPlayers} coachEmail={coachEmail} showToast={showToast} />}
+    </div>
+  );
+}
+
+// ── ScoresTab (Leaderboard — admin only) ──────────────────────────────────────
+function ScoresTab() {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -837,30 +1154,36 @@ function ScoresTab({ player }) {
   const maxPossible = WEEKS.reduce((a,w) => a + weekMaxPts(w), 0);
 
   return (
-    <div style={{padding:"14px 16px"}}>
+    <div>
       <div style={{background:"linear-gradient(135deg,var(--g) 0%,#4a0a0e 100%)",borderRadius:"var(--radius)",padding:"22px 20px",marginBottom:14,color:"white",textAlign:"center",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",right:-10,bottom:-14,fontSize:100,opacity:0.07,pointerEvents:"none"}}>🏆</div>
         <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:36,letterSpacing:"0.02em",color:"var(--gold)"}}>LEADERBOARD</div>
-        <div style={{fontSize:12,opacity:0.75,marginTop:4}}>Fingallians 2015 Girls · Summer Challenge 2026</div>
+        <div style={{fontSize:12,opacity:0.75,marginTop:4}}>Fingallians 2014 Boys · Summer Challenge 2026</div>
         <div style={{fontSize:11,opacity:0.6,marginTop:4}}>Updates live as sessions are logged</div>
       </div>
+
       {loading ? (
         <div className="loader"><div className="spinner"/>Loading scores…</div>
+      ) : leaderboard.length === 0 ? (
+        <div className="empty"><div className="icon">🏑</div><p>No scores yet — get logging!</p></div>
       ) : leaderboard.map((p, i) => {
-        const isYou = player?.id === p.id;
         const pct   = Math.round((p.pts / maxPossible) * 100);
         return (
           <div key={p.id} style={{
             display:"flex",alignItems:"center",gap:12,
-            background: isYou ? "var(--g3)" : "white",
-            border: isYou ? "2px solid var(--g)" : "2px solid transparent",
+            background:"white",
+            border:"2px solid transparent",
             borderRadius:14,padding:"12px 14px",marginBottom:8,
             boxShadow:"0 2px 10px rgba(163,22,33,0.08)"
           }}>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:22,width:32,textAlign:"center",flexShrink:0}}>{rankEmoji(i)}</div>
-            <div style={{width:36,height:36,borderRadius:"50%",background:"var(--g)",color:"var(--gold)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Barlow Condensed',sans-serif",fontSize:18,flexShrink:0}}>{p.name[0]}</div>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:22,width:32,textAlign:"center",flexShrink:0}}>
+              {rankEmoji(i)}
+            </div>
+            <div style={{width:36,height:36,borderRadius:"50%",background:"var(--g)",color:"var(--gold)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Barlow Condensed',sans-serif",fontSize:18,flexShrink:0}}>
+              {p.name[0]}
+            </div>
             <div style={{flex:1}}>
-              <div style={{fontWeight:700,fontSize:15}}>{p.name}{isYou?" 👈":""}</div>
+              <div style={{fontWeight:700,fontSize:15}}>{p.name}</div>
               <div style={{height:4,background:"#f0dede",borderRadius:2,marginTop:5,overflow:"hidden"}}>
                 <div style={{height:"100%",width:`${pct}%`,background:i===0?"var(--gold)":"var(--g)",borderRadius:2,transition:"width 0.4s"}}/>
               </div>
@@ -871,12 +1194,528 @@ function ScoresTab({ player }) {
           </div>
         );
       })}
+
       <div style={{textAlign:"center",fontSize:12,color:"var(--muted)",marginTop:16,lineHeight:1.7}}>
-        🏆 Most Improved Player prize awarded at end of summer<br/>based on skills assessment before &amp; after the challenge
+        🏆 Most Improved Player prize awarded at end of summer<br/>
+        based on skills assessment before &amp; after the challenge
       </div>
     </div>
   );
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ADMIN TAB
+// ══════════════════════════════════════════════════════════════════════════════
+// ─── Fitness Testing Component ────────────────────────────────────────────────
+// ── Helpers shared across fitness components ──────────────────────────────────
+function fmtTime(s) {
+  if (!s && s !== 0) return "—";
+  const m = Math.floor(s / 60), sec = s % 60;
+  return `${m}:${String(sec).padStart(2,"0")}`;
+}
+function parseTime(val) {
+  // Accept m:ss, mm:ss, or raw seconds
+  const v = val.trim();
+  if (!v) return null;
+  if (v.includes(":")) {
+    const parts = v.split(":");
+    const m = parseInt(parts[0], 10) || 0;
+    const s = parseInt(parts[1], 10) || 0;
+    const total = m * 60 + s;
+    return total > 0 ? total : null;
+  }
+  const n = parseInt(v, 10);
+  return n > 0 ? n : null;
+}
+
+// ── FitnessTab ────────────────────────────────────────────────────────────────
+// Unified view: one card per player with times + accordion for football/hurling notes.
+// Two sub-views: "entry" (type times for whole squad) and "results" (ranked table).
+function FitnessTab({ allPlayers, coachEmail, showToast }) {
+  const [period,   setPeriod]   = useState("pre");
+  const [testDate, setTestDate] = useState(new Date().toISOString().slice(0,10));
+  const [view,     setView]     = useState("entry");
+  const [entries,  setEntries]  = useState({});
+  const [cnotes,   setCnotes]   = useState({});
+  const [open,     setOpen]     = useState({});
+  const [saving,   setSaving]   = useState({});
+  const [loading,  setLoading]  = useState(true);
+  const [search,   setSearch]   = useState("");
+  const [ptsMap,   setPtsMap]   = useState({});
+
+  // Load fitness + coach notes together
+  useEffect(() => {
+    if (!allPlayers.length) return;
+    setLoading(true);
+    const ids = allPlayers.map(p => p.id);
+    Promise.all([
+      sb.from("fitness_tests").select("*").in("player_id", ids).eq("period", period),
+      sb.from("coach_notes").select("*").in("player_id", ids),
+      sb.from("task_completions").select("player_id,task_key").in("player_id", ids),
+    ]).then(([{ data: ft }, { data: cn }, { data: comps }]) => {
+      // Seed entries
+      const eMap = {};
+      allPlayers.forEach(p => { eMap[p.id] = { lap: "", notes: "" }; });
+      ft?.forEach(r => {
+        eMap[r.player_id] = {
+          lap:   r.lap_time ? fmtTime(r.lap_time) : "",
+          notes: r.notes || "",
+        };
+      });
+      setEntries(eMap);
+
+      // Seed coach notes
+      const cMap = {};
+      allPlayers.forEach(p => {
+        cMap[p.id] = {
+          football: { myNote: "", saved: [] },
+          hurling:  { myNote: "", saved: [] },
+        };
+      });
+      cn?.forEach(r => {
+        if (!cMap[r.player_id]) return;
+        const sport = r.sport;
+        cMap[r.player_id][sport].saved.push(r);
+        if (r.coach_email === coachEmail) cMap[r.player_id][sport].myNote = r.note || "";
+      });
+      setCnotes(cMap);
+
+      // Calculate pts per player from task_completions
+      const statsMap = {};
+      comps?.forEach(r => {
+        if (!statsMap[r.player_id]) statsMap[r.player_id] = {};
+        statsMap[r.player_id][r.task_key] = true;
+      });
+      const pm = {};
+      ids.forEach(id => { pm[id] = totalPts(statsMap[id] || {}); });
+      setPtsMap(pm);
+
+      setLoading(false);
+    });
+  }, [period, allPlayers, coachEmail]);
+
+  function setField(pid, field, val) {
+    setEntries(e => ({ ...e, [pid]: { ...e[pid], [field]: val } }));
+  }
+  function setCnoteField(pid, sport, val) {
+    setCnotes(c => ({ ...c, [pid]: { ...c[pid], [sport]: { ...c[pid][sport], myNote: val } } }));
+  }
+  function toggleAccordion(pid, sport) {
+    const key = pid + sport;
+    setOpen(o => ({ ...o, [key]: !o[key] }));
+  }
+
+  // Save notes for one player (lap time auto-saves on blur)
+  async function savePlayer(pid) {
+    setSaving(s => ({ ...s, [pid]: true }));
+    const e  = entries[pid] || {};
+    const cn = cnotes[pid]  || { football:{ myNote:"", saved:[] }, hurling:{ myNote:"", saved:[] } };
+    let errs = 0;
+
+    // Always upsert fitness row with both lap_time AND notes so neither clobbers the other
+    const { error: ftErr } = await sb.from("fitness_tests").upsert({
+      player_id: pid, period, test_date: testDate,
+      lap_time:  parseTime(e.lap) || null,
+      notes:     e.notes?.trim() || null,
+      updated_at: new Date().toISOString(),
+    }, { onConflict:"player_id,period" });
+    if (ftErr) errs++;
+
+    // Coach notes — always upsert both sports
+    for (const sport of ["football","camogie"]) {
+      const note = (cn[sport]?.myNote ?? "").trim();
+      const payload = {
+        player_id: pid, sport, coach_email: coachEmail,
+        session_date: testDate, note: note || null,
+        updated_at: new Date().toISOString(),
+      };
+      const { error } = await sb.from("coach_notes")
+        .upsert(payload, { onConflict:"player_id,sport,coach_email" });
+      if (error) errs++;
+      else {
+        setCnotes(c => {
+          const prev = c[pid] || { football:{ myNote:"", saved:[] }, hurling:{ myNote:"", saved:[] } };
+          const existing = (prev[sport]?.saved||[]).filter(s => s.coach_email !== coachEmail);
+          return { ...c, [pid]: { ...prev, [sport]: { ...prev[sport], saved:[...existing, payload] } } };
+        });
+      }
+    }
+
+    setSaving(s => ({ ...s, [pid]: false }));
+    errs ? showToast("⚠️ Some changes failed to save") : showToast("✅ Saved!");
+  }
+
+  const coachName = email => ({ "e.t.archbold@gmail.com": "Elaine" }[email] || email.split("@")[0]);
+  const coachColor = email => ({ "e.t.archbold@gmail.com": "#1565c0" }[email] || "#666");
+  const filledCount = Object.values(entries).filter(e => parseTime(e.lap)).length;
+
+  return (
+    <div>
+      {/* Period + date controls */}
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
+        <div>
+          <label className="lbl">Test Period</label>
+          <select className="inp" value={period} onChange={e => setPeriod(e.target.value)}>
+            <option value="pre">🌱 Pre-Summer (Jun)</option>
+            <option value="post">🏆 Post-Summer (Aug)</option>
+          </select>
+        </div>
+        <div>
+          <label className="lbl">Session Date</label>
+          <input className="inp" type="date" value={testDate} onChange={e => setTestDate(e.target.value)} />
+        </div>
+      </div>
+
+      {/* View toggle */}
+      <div style={{display:"flex",borderRadius:10,overflow:"hidden",border:"2px solid #a31621",marginBottom:16,width:"100%"}}>
+        {[["entry","Enter Times"],["results","Results Table"]].map(([v,label]) => (
+          <button key={v} onClick={() => setView(v)} style={{
+            flex:1, padding:"10px 8px", border:"none", cursor:"pointer",
+            fontFamily:"inherit", fontSize:13, fontWeight:700,
+            background: view===v ? "#a31621" : "#fff",
+            color:      view===v ? "#fff"    : "#a31621",
+            opacity:    view===v ? 1         : 0.45,
+            transition:"all 0.15s",
+          }}>{label}</button>
+        ))}
+      </div>
+
+      {loading && <div style={{textAlign:"center",color:"var(--muted)",padding:"20px 0",fontSize:13}}>Loading…</div>}
+
+      {/* ── ENTRY VIEW ── */}
+      {!loading && view === "entry" && (
+        <>
+          <div style={{fontSize:11,color:"var(--muted)",marginBottom:10,lineHeight:1.6}}>
+            Lap times save automatically when you move to the next field. Open Notes to add coaching notes and hit Save.
+          </div>
+
+          {/* Search bar */}
+          <input className="inp" placeholder="🔍  Search player…" value={search}
+            onChange={e => setSearch(e.target.value)}
+            style={{marginBottom:12,fontSize:13,padding:"8px 12px"}} />
+
+          {allPlayers.filter(p => p.name.toLowerCase().includes(search.toLowerCase())).map((p) => {
+            const e   = entries[p.id] || { lap:"", notes:"" };
+            const cn  = cnotes[p.id]  || { football:{ myNote:"", saved:[] }, hurling:{ myNote:"", saved:[] } };
+            const lapValid  = e.lap ? parseTime(e.lap) !== null : true;
+            const notesOpen = !!open[p.id];
+            const hasNotes  = cn.football.saved.filter(s=>s.note).length + cn.hurling.saved.filter(s=>s.note).length;
+
+            return (
+              <div key={p.id} style={{background:"#fff",border:"1px solid #e0e0e0",borderRadius:12,marginBottom:8,overflow:"hidden"}}>
+
+                {/* Name + lap time */}
+                <div style={{display:"grid",gridTemplateColumns:"1fr 90px",gap:8,padding:"10px 12px",alignItems:"center"}}>
+                  <div style={{fontWeight:700,fontSize:13,color:"var(--dark)",display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
+                    {p.name}
+                    <span style={{background:"#fff4cc",color:"#7a5c00",fontSize:11,
+                                  fontWeight:900,padding:"1px 7px",borderRadius:10,
+                                  border:"1px solid #d4a017",flexShrink:0}}>
+                      {ptsMap[p.id] || 0} pts
+                    </span>
+                  </div>
+                  <div>
+                    <div style={{fontSize:9,fontWeight:700,color:"var(--muted)",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:3,textAlign:"center"}}>Lap Time</div>
+                    <input className="inp" placeholder="m:ss" value={e.lap}
+                      onChange={ev => setField(p.id,"lap",ev.target.value)}
+                      onBlur={async ev => {
+                        const secs = parseTime(ev.target.value);
+                        if (!secs) return;
+                        const cur = entries[p.id] || {};
+                        const { error } = await sb.from("fitness_tests").upsert({
+                          player_id: p.id, period, test_date: testDate,
+                          lap_time: secs,
+                          notes: cur.notes?.trim() || null,
+                          updated_at: new Date().toISOString(),
+                        }, { onConflict:"player_id,period" });
+                        if (!error) showToast(`✅ ${p.name.split(" ")[0]} lap saved`);
+                        else showToast("⚠️ Lap save failed");
+                      }}
+                      style={{textAlign:"center",padding:"5px 4px",fontSize:13,fontWeight:700,
+                              borderColor:!lapValid?"#e53935":undefined,
+                              color:parseTime(e.lap)?"#2e7d32":"inherit"}} />
+                  </div>
+                </div>
+
+                {/* Notes toggle */}
+                <div style={{borderTop:"1px solid #f0f0f0"}}>
+                  <button onClick={() => setOpen(o => ({...o, [p.id]: !o[p.id]}))}
+                    style={{width:"100%",padding:"8px 12px",border:"none",background:notesOpen?"#f0f4ff":"transparent",
+                            cursor:"pointer",display:"flex",alignItems:"center",gap:6,
+                            fontSize:12,fontWeight:700,color:"#333",fontFamily:"inherit"}}>
+                    <span>📝 Notes</span>
+                    {hasNotes > 0 && (
+                      <span style={{background:"var(--primary)",color:"#fff",fontSize:10,fontWeight:900,
+                                    padding:"1px 7px",borderRadius:10}}>{hasNotes}</span>
+                    )}
+                    <span style={{marginLeft:"auto",fontSize:11,color:"#999"}}>{notesOpen?"▲":"▼"}</span>
+                  </button>
+                </div>
+
+                {/* Notes body */}
+                {notesOpen && (
+                  <div style={{padding:"12px",background:"#fafafa",borderTop:"1px solid #f0f0f0",display:"flex",flexDirection:"column",gap:12}}>
+
+                    <div>
+                      <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",color:"var(--muted)",marginBottom:4}}>🏃 Fitness Notes</div>
+                      <input className="inp" placeholder="e.g. Strong effort, needs to pace better…"
+                        value={e.notes}
+                        onChange={ev => setField(p.id,"notes",ev.target.value)}
+                        style={{fontSize:12,padding:"6px 8px",width:"100%"}} />
+                    </div>
+
+                    <div>
+                      <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",color:"var(--muted)",marginBottom:4}}>⚽ Football Notes</div>
+                      <NoteAccordionBody sport="football" cn={cn.football}
+                        coachEmail={coachEmail} coachName={coachName} coachColor={coachColor}
+                        onChange={val => setCnoteField(p.id,"football",val)} />
+                    </div>
+
+                    <div>
+                      <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",color:"var(--muted)",marginBottom:4}}>🏑 Camogie Notes</div>
+                      <NoteAccordionBody sport="camogie" cn={cn.hurling}
+                        coachEmail={coachEmail} coachName={coachName} coachColor={coachColor}
+                        onChange={val => setCnoteField(p.id,"camogie",val)} />
+                    </div>
+
+                    {/* Save button inside accordion */}
+                    <button onClick={() => savePlayer(p.id)} disabled={!!saving[p.id]}
+                      style={{padding:"11px",borderRadius:8,border:"none",
+                              background:saving[p.id]?"#ccc":"#a31621",
+                              color:"#fff",fontWeight:700,fontSize:14,
+                              cursor:saving[p.id]?"not-allowed":"pointer",
+                              fontFamily:"inherit",width:"100%",letterSpacing:"0.04em"}}>
+                      {saving[p.id] ? "Saving…" : "Save"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          <div style={{fontSize:12,color:"var(--muted)",textAlign:"center",marginTop:8}}>
+            {filledCount} of {allPlayers.length} players timed
+          </div>
+        </>
+      )}
+
+      {/* ── RESULTS VIEW ── */}
+      {!loading && view === "results" && (
+        <ResultsTable allPlayers={allPlayers} period={period} ptsMap={ptsMap} />
+      )}
+    </div>
+  );
+}
+
+// ── NoteAccordionBody ─────────────────────────────────────────────────────────
+// Renders inside an open accordion: other coaches' saved notes + my editable note.
+function NoteAccordionBody({ sport, cn, coachEmail, coachName, coachColor, onChange }) {
+  const otherNotes = cn.saved.filter(s => s.coach_email !== coachEmail && s.note);
+  return (
+    <div>
+      {otherNotes.length > 0 && (
+        <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:10}}>
+          {otherNotes.map(s => (
+            <div key={s.coach_email} style={{
+              background:"#fff",borderRadius:6,padding:"6px 10px",
+              fontSize:12,lineHeight:1.5,
+              borderLeft:`3px solid ${coachColor(s.coach_email)}`
+            }}>
+              <span style={{fontWeight:700,fontSize:11,textTransform:"uppercase",
+                            letterSpacing:"0.05em",color:coachColor(s.coach_email)}}>
+                {coachName(s.coach_email)}:&nbsp;
+              </span>
+              {s.note}
+            </div>
+          ))}
+        </div>
+      )}
+      <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",
+                   color:coachColor(coachEmail),marginBottom:4}}>
+        {coachName(coachEmail)} (you)
+      </div>
+      <textarea className="inp"
+        placeholder={`Your ${sport} note…`}
+        value={cn.myNote}
+        onChange={e => onChange(e.target.value)}
+        rows={2}
+        style={{width:"100%",resize:"vertical",fontSize:12,padding:"7px 10px"}}
+      />
+    </div>
+  );
+}
+
+// ── ResultsTable ──────────────────────────────────────────────────────────────
+function ResultsTable({ allPlayers, period, ptsMap = {} }) {
+  const [allTests,    setAllTests]    = useState([]);
+  const [loading,     setLoading]     = useState(true);
+  const [showPeriod,  setShowPeriod]  = useState(period);
+
+  useEffect(() => {
+    if (!allPlayers.length) return;
+    sb.from("fitness_tests").select("*")
+      .in("player_id", allPlayers.map(p => p.id))
+      .then(({ data }) => { setAllTests(data || []); setLoading(false); });
+  }, [allPlayers]);
+
+  if (loading) return <div style={{textAlign:"center",color:"#9a7070",padding:"20px 0",fontSize:13}}>Loading…</div>;
+
+  const playerMap = {};
+  allPlayers.forEach(p => { playerMap[p.id] = { id: p.id, name: p.name, pre: null, post: null }; });
+  allTests.forEach(t => { if (playerMap[t.player_id]) playerMap[t.player_id][t.period] = t; });
+
+  // Combined rank: lap time rank + inverse pts rank (lower = better)
+  // Players with no lap time go to the bottom
+  const base = Object.values(playerMap);
+  const maxPts = Math.max(...base.map(r => ptsMap[r.id] || 0), 1);
+
+  const rows = base.sort((a, b) => {
+    const ta = a[showPeriod]?.lap_time, tb = b[showPeriod]?.lap_time;
+    const pa = ptsMap[a.id] || 0, pb = ptsMap[b.id] || 0;
+    // If both have a lap time, combine: normalised lap (lower=better) minus normalised pts (higher=better)
+    if (ta && tb) {
+      const scoreA = (ta / 600) - (pa / maxPts);   // lower is better
+      const scoreB = (tb / 600) - (pb / maxPts);
+      return scoreA - scoreB;
+    }
+    if (!ta && !tb) return pb - pa;  // no times: rank by pts
+    if (!ta) return 1;
+    if (!tb) return -1;
+  });
+
+  const hasAnyPost  = rows.some(r => r.post?.lap_time);
+  const medalColors = ["#f5c842","#b0b0b0","#cd7f32"];
+  const cols = hasAnyPost
+    ? "28px 1fr 70px 70px 60px 55px"
+    : "28px 1fr 80px 55px";
+
+  return (
+    <div>
+      <div style={{display:"flex",gap:8,marginBottom:14,alignItems:"center"}}>
+        <span style={{fontSize:11,color:"#9a7070",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em"}}>Rank by:</span>
+        {["pre","post"].map(p => (
+          <button key={p} onClick={() => setShowPeriod(p)} style={{
+            padding:"6px 14px", borderRadius:8, cursor:"pointer",
+            fontFamily:"inherit", fontSize:13, fontWeight:700,
+            background: showPeriod===p ? "#a31621" : "#fff",
+            color:      showPeriod===p ? "#fff"    : "#a31621",
+            border:     "2px solid #a31621",
+            opacity:    showPeriod===p ? 1 : 0.45,
+            transition:"all 0.15s",
+          }}>
+            {p === "pre" ? "🌱 Pre" : "🏆 Post"}
+          </button>
+        ))}
+      </div>
+
+      {/* Header */}
+      <div style={{display:"grid", gridTemplateColumns:cols, gap:6,
+                   padding:"7px 10px", background:"#f5f5f5", borderRadius:"8px 8px 0 0",
+                   fontSize:11, fontWeight:700, color:"#5a3a3d",
+                   textTransform:"uppercase", letterSpacing:"0.06em"}}>
+        <div>#</div>
+        <div>Player</div>
+        <div style={{textAlign:"center"}}>Pre Lap</div>
+        {hasAnyPost && <div style={{textAlign:"center"}}>Post Lap</div>}
+        {hasAnyPost && <div style={{textAlign:"center"}}>Diff</div>}
+        <div style={{textAlign:"center"}}>Pts</div>
+      </div>
+
+      {rows.map((r, i) => {
+        const preLap   = r.pre?.lap_time  ?? null;
+        const postLap  = r.post?.lap_time ?? null;
+        const diff     = preLap && postLap ? postLap - preLap : null;
+        const improved = diff !== null && diff < 0;
+        const slower   = diff !== null && diff > 0;
+        const pts      = ptsMap[r.id] || 0;
+        const preNotes = r.pre?.notes, postNotes = r.post?.notes;
+
+        return (
+          <div key={r.name}>
+            <div style={{display:"grid", gridTemplateColumns:cols,
+                         gap:6, padding:"9px 10px", alignItems:"center",
+                         background: i%2===0 ? "#fff" : "#fafafa",
+                         borderBottom:"1px solid #f0f0f0"}}>
+              {/* Rank */}
+              <div style={{fontSize:i<3?16:12, textAlign:"center",
+                           color:i<3?medalColors[i]:"#ccc", fontWeight:900}}>
+                {i<3 ? ["🥇","🥈","🥉"][i] : i+1}
+              </div>
+              {/* Name */}
+              <div style={{fontSize:13,fontWeight:700,overflow:"hidden",
+                           textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+                {r.name}
+              </div>
+              {/* Pre lap */}
+              <div style={{textAlign:"center",fontSize:13,
+                           color:showPeriod==="pre"?"#a31621":"#5a3a3d",
+                           fontWeight:showPeriod==="pre"?700:400}}>
+                {preLap ? fmtTime(preLap) : <span style={{color:"#ddd"}}>—</span>}
+              </div>
+              {/* Post lap */}
+              {hasAnyPost && <div style={{textAlign:"center",fontSize:13,
+                           color:showPeriod==="post"?"#a31621":"#5a3a3d",
+                           fontWeight:showPeriod==="post"?700:400}}>
+                {postLap ? fmtTime(postLap) : <span style={{color:"#ddd"}}>—</span>}
+              </div>}
+              {/* Diff */}
+              {hasAnyPost && <div style={{textAlign:"center",fontSize:12,fontWeight:700,
+                           color:improved?"#2e7d32":slower?"#e53935":"#ccc"}}>
+                {diff===null ? "—" : improved ? `▼${fmtTime(Math.abs(diff))}` : slower ? `▲${fmtTime(diff)}` : "="}
+              </div>}
+              {/* Points */}
+              <div style={{textAlign:"center"}}>
+                <span style={{background:"#fff4cc",color:"#1a0a0b",fontSize:12,
+                              fontWeight:900,padding:"2px 8px",borderRadius:10,
+                              border:"1px solid #d4a017"}}>
+                  {pts}
+                </span>
+              </div>
+            </div>
+            {/* Notes */}
+            {(preNotes||postNotes) && (
+              <div style={{padding:"4px 10px 8px 44px",background:i%2===0?"#fff":"#fafafa",
+                           borderBottom:"1px solid #f0f0f0",display:"flex",gap:16,flexWrap:"wrap"}}>
+                {preNotes  && <div style={{fontSize:11,color:"#9a7070",fontStyle:"italic",lineHeight:1.5}}><span style={{fontWeight:700,fontStyle:"normal",color:"#e65100"}}>Pre: </span>{preNotes}</div>}
+                {postNotes && <div style={{fontSize:11,color:"#9a7070",fontStyle:"italic",lineHeight:1.5}}><span style={{fontWeight:700,fontStyle:"normal",color:"#2e7d32"}}>Post: </span>{postNotes}</div>}
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {/* Squad summary */}
+      {(() => {
+        const timed = rows.filter(r => r[showPeriod]?.lap_time);
+        if (!timed.length) return null;
+        const times    = timed.map(r => r[showPeriod].lap_time);
+        const avg      = Math.round(times.reduce((a,b)=>a+b,0)/times.length);
+        const improved = rows.filter(r => r.pre?.lap_time && r.post?.lap_time && r.post.lap_time < r.pre.lap_time);
+        const topPts   = Math.max(...rows.map(r => ptsMap[r.id]||0));
+        return (
+          <div style={{display:"flex",gap:10,marginTop:12,flexWrap:"wrap"}}>
+            {[
+              {label:"Squad avg",  val:fmtTime(avg),              color:"#a31621"},
+              {label:"Fastest",    val:fmtTime(Math.min(...times)),color:"#2e7d32"},
+              {label:"Top pts",    val:`${topPts} pts`,            color:"#d4a017"},
+              ...(improved.length ? [{label:"Improved", val:`${improved.length} boys`, color:"#2e7d32"}] : []),
+            ].map(stat => (
+              <div key={stat.label} style={{flex:1,minWidth:80,background:"#f9f9f9",
+                    border:"1px solid #eee",borderRadius:10,padding:"10px 12px",textAlign:"center"}}>
+                <div style={{fontSize:17,fontWeight:900,color:stat.color}}>{stat.val}</div>
+                <div style={{fontSize:10,color:"#9a7070",textTransform:"uppercase",
+                             letterSpacing:"0.06em",marginTop:2}}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+    </div>
+  );
+}
+
+
+
 
 function AdminTab({ allPlayers, onRefresh, showToast }) {
   const [newName, setNewName]         = useState("");
