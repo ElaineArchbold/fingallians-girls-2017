@@ -1294,7 +1294,7 @@ function FitnessTab({ allPlayers, coachEmail, showToast }) {
       allPlayers.forEach(p => {
         cMap[p.id] = {
           football: { myNote: "", saved: [] },
-          hurling:  { myNote: "", saved: [] },
+          camogie:  { myNote: "", saved: [] },
         };
       });
       cn?.forEach(r => {
@@ -1338,7 +1338,7 @@ function FitnessTab({ allPlayers, coachEmail, showToast }) {
   async function savePlayer(pid) {
     setSaving(s => ({ ...s, [pid]: true }));
     const e  = entries[pid] || {};
-    const cn = cnotes[pid]  || { football:{ myNote:"", saved:[] }, hurling:{ myNote:"", saved:[] } };
+    const cn = cnotes[pid]  || { football:{ myNote:"", saved:[] }, camogie:{ myNote:"", saved:[] } };
     let errs = 0;
 
     // Always upsert fitness row with both lap_time AND notes so neither clobbers the other
@@ -1363,7 +1363,7 @@ function FitnessTab({ allPlayers, coachEmail, showToast }) {
       if (error) errs++;
       else {
         setCnotes(c => {
-          const prev = c[pid] || { football:{ myNote:"", saved:[] }, hurling:{ myNote:"", saved:[] } };
+          const prev = c[pid] || { football:{ myNote:"", saved:[] }, camogie:{ myNote:"", saved:[] } };
           const existing = (prev[sport]?.saved||[]).filter(s => s.coach_email !== coachEmail);
           return { ...c, [pid]: { ...prev, [sport]: { ...prev[sport], saved:[...existing, payload] } } };
         });
@@ -1381,8 +1381,8 @@ function FitnessTab({ allPlayers, coachEmail, showToast }) {
     }
   }
 
-  const coachName = email => ({'e.t.archbold@gmail.com': 'Elaine', 'mwyse86@gmail.com': 'Coach M'}[email] || email.split("@")[0]);
-  const coachColor = email => ({'e.t.archbold@gmail.com': '#1565c0', 'mwyse86@gmail.com': '#2e7d32'}[email] || "#666");
+  const coachName = email => ({"e.t.archbold@gmail.com":"Elaine","mwyse86@gmail.com":"Coach M"}[email] || email.split("@")[0]);
+  const coachColor = email => ({"e.t.archbold@gmail.com":"#1565c0","mwyse86@gmail.com":"#2e7d32"}[email] || "#666");
   const filledCount = Object.values(entries).filter(e => parseTime(e.lap)).length;
 
   return (
@@ -1432,10 +1432,10 @@ function FitnessTab({ allPlayers, coachEmail, showToast }) {
 
           {allPlayers.filter(p => p.name.toLowerCase().includes(search.toLowerCase())).map((p) => {
             const e   = entries[p.id] || { lap:"", notes:"" };
-            const cn  = cnotes[p.id]  || { football:{ myNote:"", saved:[] }, hurling:{ myNote:"", saved:[] } };
+            const cn  = cnotes[p.id]  || { football:{ myNote:"", saved:[] }, camogie:{ myNote:"", saved:[] } };
             const lapValid  = e.lap ? parseTime(e.lap) !== null : true;
             const notesOpen = !!open[p.id];
-            const hasNotes  = cn.football.saved.filter(s=>s.note).length + cn.hurling.saved.filter(s=>s.note).length;
+            const hasNotes  = cn.football.saved.filter(s=>s.note).length + (cn.camogie?.saved||[]).filter(s=>s.note).length;
 
             return (
               <div key={p.id} style={{background:"#fff",border:"1px solid #e0e0e0",borderRadius:12,marginBottom:8,overflow:"hidden"}}>
@@ -1531,7 +1531,7 @@ function FitnessTab({ allPlayers, coachEmail, showToast }) {
 
                     <div>
                       <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",color:"var(--muted)",marginBottom:4}}>🏑 Camogie Notes</div>
-                      <NoteAccordionBody sport="camogie" cn={cn.hurling}
+                      <NoteAccordionBody sport="camogie" cn={cn.camogie || { myNote: "", saved: [] }}
                         coachEmail={coachEmail} coachName={coachName} coachColor={coachColor}
                         onChange={val => setCnoteField(p.id,"camogie",val)} />
                     </div>
