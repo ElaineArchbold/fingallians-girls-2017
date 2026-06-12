@@ -1264,6 +1264,8 @@ function FitnessTab({ allPlayers, coachEmail, showToast }) {
   const [loading,  setLoading]  = useState(true);
   const [search,   setSearch]   = useState("");
   const [ptsMap,   setPtsMap]   = useState({});
+  const lapDebounce = useRef({});    // debounce timers per player
+  const entriesRef  = useRef({});    // always-current entries for use inside timeouts
 
   // Load fitness + coach notes together
   useEffect(() => {
@@ -1285,6 +1287,7 @@ function FitnessTab({ allPlayers, coachEmail, showToast }) {
         };
       });
       setEntries(eMap);
+      entriesRef.current = eMap;
 
       // Seed coach notes
       const cMap = {};
@@ -1317,7 +1320,11 @@ function FitnessTab({ allPlayers, coachEmail, showToast }) {
   }, [period, allPlayers, coachEmail]);
 
   function setField(pid, field, val) {
-    setEntries(e => ({ ...e, [pid]: { ...e[pid], [field]: val } }));
+    setEntries(e => {
+      const next = { ...e, [pid]: { ...e[pid], [field]: val } };
+      entriesRef.current = next;
+      return next;
+    });
   }
   function setCnoteField(pid, sport, val) {
     setCnotes(c => ({ ...c, [pid]: { ...c[pid], [sport]: { ...c[pid][sport], myNote: val } } }));
@@ -1374,8 +1381,8 @@ function FitnessTab({ allPlayers, coachEmail, showToast }) {
     }
   }
 
-  const coachName = email => ({ "e.t.archbold@gmail.com": "Elaine", "mwyse86@gmail.com": "Coach M" }[email] || email.split("@")[0]);
-  const coachColor = email => ({ "e.t.archbold@gmail.com": "#1565c0", "mwyse86@gmail.com": "#2e7d32" }[email] || "#666");
+  const coachName = email => ({'e.t.archbold@gmail.com': 'Elaine', 'mwyse86@gmail.com': 'Coach M'}[email] || email.split("@")[0]);
+  const coachColor = email => ({'e.t.archbold@gmail.com': '#1565c0', 'mwyse86@gmail.com': '#2e7d32'}[email] || "#666");
   const filledCount = Object.values(entries).filter(e => parseTime(e.lap)).length;
 
   return (
@@ -1453,7 +1460,7 @@ function FitnessTab({ allPlayers, coachEmail, showToast }) {
                         lapDebounce.current[p.id] = setTimeout(async () => {
                           const secs = parseTime(val);
                           if (!secs && val.trim() !== "") return; // partial — wait
-                          const cur = entries[p.id] || {};
+                          const cur = entriesRef.current[p.id] || {};
                           let error;
                           if (secs) {
                             // Valid time — upsert full row
