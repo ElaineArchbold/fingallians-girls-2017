@@ -528,7 +528,7 @@ function AuthScreen({ showToast }) {
                 </div>
                 <div className="tc-section">
                   <strong>Data & Privacy</strong>
-                  <p>To use this app we store your child's first and last name and your email address. No other personal information is collected or stored. Your data is not shared with any third party and is used solely to manage participation in the 2026 Summer Challenge. You can request deletion of your data at any time by emailing <strong>fingallians2014boys@gmail.com</strong>.</p>
+                  <p>To use this app we store your child's first and last name and your email address. No other personal information is collected or stored. Your data is not shared with any third party and is used solely to manage participation in the 2026 Summer Challenge. You can request deletion of your data at any time by emailing <strong>Fingallians2015GirlsChallenge@gmail.com</strong>.</p>
                 </div>
                 <div className="tc-section">
                   <strong>Participation</strong>
@@ -656,8 +656,8 @@ function HomeTab({ player, checks, pts, weeksDone, onNav, onToggle }) {
         <div style={{fontSize:13,opacity:0.85,lineHeight:1.6,marginBottom:10}}>
           Filmed yourself practising? Send your videos to the coaches — we'd love to see the girls putting in the work!
         </div>
-        <a href="mailto:fingallians2014boys@gmail.com" style={{display:"inline-block",background:"var(--gold)",color:"var(--dark)",fontFamily:"'Barlow Condensed',sans-serif",fontSize:15,letterSpacing:"0.04em",fontWeight:900,padding:"8px 16px",borderRadius:20,textDecoration:"none"}}>
-          📧 fingallians2014boys@gmail.com
+        <a href="mailto:Fingallians2015GirlsChallenge@gmail.com" style={{display:"inline-block",background:"var(--gold)",color:"var(--dark)",fontFamily:"'Barlow Condensed',sans-serif",fontSize:15,letterSpacing:"0.04em",fontWeight:900,padding:"8px 16px",borderRadius:20,textDecoration:"none"}}>
+          📧 Fingallians2015GirlsChallenge@gmail.com
         </a>
       </div>
       <div style={{textAlign:"center",marginTop:14,paddingBottom:8}}>
@@ -807,7 +807,7 @@ function PlanTab({ checks, onToggle, player }) {
         </div>
         <div className="tc-section">
           <strong>Data & Privacy</strong>
-          <p>To use this app we store your child's first and last name and your email address. No other personal information is collected or stored. Your data is not shared with any third party and is used solely to manage participation in the 2026 Summer Challenge. You can request deletion of your data at any time by emailing <strong>fingallians2014boys@gmail.com</strong>.</p>
+          <p>To use this app we store your child's first and last name and your email address. No other personal information is collected or stored. Your data is not shared with any third party and is used solely to manage participation in the 2026 Summer Challenge. You can request deletion of your data at any time by emailing <strong>Fingallians2015GirlsChallenge@gmail.com</strong>.</p>
         </div>
         <div className="tc-section">
           <strong>Participation</strong>
@@ -937,7 +937,7 @@ function ProgressTab({ player, checks, isAdmin }) {
         <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:26,color:"var(--gold)",letterSpacing:"0.02em"}}>
           {player.name.split(" ")[0]}'s Progress
         </div>
-        <div style={{fontSize:11,opacity:0.65,marginTop:2}}>Fingallians 2014 · Summer Challenge 2026</div>
+        <div style={{fontSize:11,opacity:0.65,marginTop:2}}>Fingallians 2015 · Summer Challenge 2026</div>
         {isAdmin && (
           <div style={{fontSize:10,marginTop:4,background:"rgba(255,255,255,.12)",
                        display:"inline-block",padding:"2px 8px",borderRadius:10,
@@ -1158,7 +1158,7 @@ function ScoresTab() {
       <div style={{background:"linear-gradient(135deg,var(--g) 0%,#4a0a0e 100%)",borderRadius:"var(--radius)",padding:"22px 20px",marginBottom:14,color:"white",textAlign:"center",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",right:-10,bottom:-14,fontSize:100,opacity:0.07,pointerEvents:"none"}}>🏆</div>
         <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:36,letterSpacing:"0.02em",color:"var(--gold)"}}>LEADERBOARD</div>
-        <div style={{fontSize:12,opacity:0.75,marginTop:4}}>Fingallians 2014 Boys · Summer Challenge 2026</div>
+        <div style={{fontSize:12,opacity:0.75,marginTop:4}}>Fingallians 2015 Girls · Summer Challenge 2026</div>
         <div style={{fontSize:11,opacity:0.6,marginTop:4}}>Updates live as sessions are logged</div>
       </div>
 
@@ -1417,19 +1417,35 @@ function FitnessTab({ allPlayers, coachEmail, showToast }) {
                   <div>
                     <div style={{fontSize:9,fontWeight:700,color:"var(--muted)",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:3,textAlign:"center"}}>Lap Time</div>
                     <input className="inp" placeholder="m:ss" value={e.lap}
-                      onChange={ev => setField(p.id,"lap",ev.target.value)}
-                      onBlur={async ev => {
-                        const secs = parseTime(ev.target.value);
-                        if (!secs) return;
-                        const cur = entries[p.id] || {};
-                        const { error } = await sb.from("fitness_tests").upsert({
-                          player_id: p.id, period, test_date: testDate,
-                          lap_time: secs,
-                          notes: cur.notes?.trim() || null,
-                          updated_at: new Date().toISOString(),
-                        }, { onConflict:"player_id,period" });
-                        if (!error) showToast(`✅ ${p.name.split(" ")[0]} lap saved`);
-                        else showToast("⚠️ Lap save failed");
+                      onChange={ev => {
+                        const val = ev.target.value;
+                        setField(p.id,"lap",val);
+                        clearTimeout(lapDebounce.current[p.id]);
+                        lapDebounce.current[p.id] = setTimeout(async () => {
+                          const secs = parseTime(val);
+                          const curEntries = entries;
+                          const cur = curEntries[p.id] || {};
+                          let error;
+                          if (secs) {
+                            // Has a valid time — upsert full row
+                            ({ error } = await sb.from("fitness_tests").upsert({
+                              player_id: p.id, period, test_date: testDate,
+                              lap_time: secs,
+                              notes: cur.notes?.trim() || null,
+                              updated_at: new Date().toISOString(),
+                            }, { onConflict:"player_id,period" }));
+                          } else if (val.trim() === "") {
+                            // Cleared — explicitly set lap_time to null via update
+                            ({ error } = await sb.from("fitness_tests")
+                              .update({ lap_time: null, updated_at: new Date().toISOString() })
+                              .eq("player_id", p.id)
+                              .eq("period", period));
+                          } else {
+                            return; // partial input — don't save yet
+                          }
+                          if (!error) showToast(secs ? `✅ ${p.name.split(" ")[0]} lap saved` : `✅ ${p.name.split(" ")[0]} lap cleared`);
+                          else showToast("⚠️ Lap save failed");
+                        }, 800);
                       }}
                       style={{textAlign:"center",padding:"5px 4px",fontSize:13,fontWeight:700,
                               borderColor:!lapValid?"#e53935":undefined,
