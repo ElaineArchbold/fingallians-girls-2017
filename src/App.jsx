@@ -1962,7 +1962,7 @@ function DashboardTab({ allPlayers }) {
       const postTimes = fitness?.filter(f=>f.period==="post" && f.lap_time).length || 0;
 
       setStats({ totalSessions, playersActive, avgPts, topPlayer, thisWeekSessions, preTimes, postTimes,
-                 registered: links?.length || 0, total: ids.length });
+                 registered: new Set(links?.map(l=>l.player_id)||[]).size, total: ids.length });
       setLoading(false);
     });
   }, [allPlayers]);
