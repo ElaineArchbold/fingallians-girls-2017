@@ -3,6 +3,8 @@ import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL      = "https://rzjaxsfqdajnncfdwemq.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_F7tdlTdu7-vYWkNynXW94g_mgzDZ-O_";
+const SUPER_ADMIN_EMAIL = "e.t.archbold@gmail.com";
+
 const ADMIN_EMAILS = [
   "e.t.archbold@gmail.com",
   "mwyse86@gmail.com",
@@ -36,6 +38,7 @@ const WEEKS = [
   {
     week:1, phase:"Foundation", dates:"Jun 29–Jul 5",
     runs:[{label:"Run 1",distance:"1.5k"},{label:"Run 2",distance:"1.5k"},{label:"Run 3",distance:"2k"}],
+    speed:[{id:"s1a",label:"⚡ Fall Forward",desc:"Practise for 10 minutes at least once this week. Learn the name: Fall Forward. We will be using this in training — know it and own it!",youtube_id:"PTmWJ4kk0yE"}],
     skills:[
       {id:"c1a",label:"🏑 Strike from the Hand",desc:"15 mins at the ball wall: striking off both sides, aim for below shoulder height. Count clean strikes in a row.",youtube_id:"jzwskF82xIk"},
       {id:"f1a",label:"⚽ Punt Kick",desc:"15 mins: punt kick off the wall, catch on the return. Focus on clean first touch. Try both feet.",youtube_id:"z1dLhAL4vi8"},
@@ -45,6 +48,7 @@ const WEEKS = [
   {
     week:2, phase:"Foundation", dates:"Jul 6–12",
     runs:[{label:"Run 1",distance:"1.5k"},{label:"Run 2",distance:"2k"},{label:"Run 3",distance:"2k"}],
+    speed:[{id:"s2a",label:"⚡ Stationary Arm Swing",desc:"Practise for 10 minutes at least once this week. Learn the name: Stationary Arm Swing. Arms drive the legs — get this right and your speed improves. Coaches will use this in training.",youtube_id:"NUmUwXqG1pE"}],
     skills:[
       {id:"c2a",label:"🏑 Roll Lift",desc:"20 mins: roll the sliotar along the ground, scoop it up cleanly with the hurl. Practise off both sides.",youtube_id:"uO5Z21QjPMQ"},
       {id:"f2a",label:"⚽ Hook Kick and Dummy Solo",desc:"Solo the ball, add a dummy step, then hook kick. Try both feet. Count clean sequences in a row.",youtube_id:"UzqN2U5Rdls"},
@@ -54,6 +58,7 @@ const WEEKS = [
   {
     week:3, phase:"Building", dates:"Jul 13–19",
     runs:[{label:"Run 1",distance:"2k"},{label:"Run 2",distance:"2k"},{label:"Run 3",distance:"2.5k"}],
+    speed:[{id:"s3a",label:"⚡ A Skip",desc:"Practise for 10 minutes at least once this week. Learn the name: A Skip. High knees, rhythmic skip — this is a core speed drill. Coaches will use this term in training.",youtube_id:"2I4rDiFs6Ec"}],
     skills:[
       {id:"c3a",label:"🏑 Jab Lift",desc:"10 jab lifts in a row without dropping. Then try moving — lift on the run. Record your best streak.",youtube_id:"0tmM594_gak"},
       {id:"f3a",label:"⚽ Bounce, Solo and Change of Direction",desc:"Bounce, solo, change direction. Keep the ball under control. How many clean sequences in 2 mins?",youtube_id:"zMV-ReshSVU"},
@@ -63,6 +68,7 @@ const WEEKS = [
   {
     week:4, phase:"Building", dates:"Jul 20–26",
     runs:[{label:"Run 1",distance:"2k"},{label:"Run 2",distance:"2.5k"},{label:"Run 3",distance:"2.5k"}],
+    speed:[{id:"s4a",label:"⚡ Ankling Drill",desc:"Practise for 10 minutes at least once this week. Learn the name: Ankling Drill. Fast, low foot contacts — builds ground speed. Coaches will use this term in training.",youtube_id:"11xHsMcomf4"}],
     skills:[
       {id:"c4a",label:"🏑 Hook",desc:"20 mins: practise the hook — timing and hand position. Challenge a teammate if you can!",youtube_id:"P_5R-pXVqcs"},
       {id:"f4a",label:"⚽ Decision Making and Passing",desc:"20 mins: passing drill — read the play, pick your pass. Mix hand-pass and kick-pass. Move after every pass.",youtube_id:"pPxInUTHroM"},
@@ -72,6 +78,7 @@ const WEEKS = [
   {
     week:5, phase:"Push", dates:"Jul 27–Aug 2",
     runs:[{label:"Run 1",distance:"2.5k"},{label:"Run 2",distance:"2.5k"},{label:"Run 3",distance:"3k"}],
+    speed:[{id:"s5a",label:"⚡ A March",desc:"Practise for 10 minutes at least once this week. Learn the name: A March. Exaggerated high-knee march — develops hip drive and running posture. Coaches will use this in training.",youtube_id:"HISmA4pZWp0"}],
     skills:[
       {id:"c5a",label:"🏑 Block on the Ground",desc:"Practise blocking the sliotar on the ground — body position, timing, safe technique.",youtube_id:"Uq3HsM6bFvo"},
       {id:"f5a",label:"⚽ Obstacle Course",desc:"Set up cones — solo through, shoot at the end. Time yourself. Beat your time by end of the week.",youtube_id:"yCUWUAnism4"},
@@ -81,6 +88,7 @@ const WEEKS = [
   {
     week:6, phase:"Push", dates:"Aug 3–9",
     runs:[{label:"Run 1",distance:"2.5k"},{label:"Run 2",distance:"3k"},{label:"Run 3",distance:"3k"}],
+    speed:[{id:"s6a",label:"⚡ Butt Kicks",desc:"Practise for 10 minutes at least once this week. Learn the name: Butt Kicks. Heel to backside on every stride — improves hamstring activation and stride cycle. Coaches will use this term in training.",youtube_id:"p7OBdAJu9E8"}],
     skills:[
       {id:"c6a",label:"🏑 Frontal Block",desc:"25 mins at full pace: frontal blocking drills. Safe technique first — then build speed.",youtube_id:"pFOXDqLbD7g"},
       {id:"f6a",label:"⚽ The Body Catch",desc:"Practise the body catch — take the ball into the chest, secure it. Work off both sides.",youtube_id:"8loHSEuEJx8"},
@@ -90,6 +98,7 @@ const WEEKS = [
   {
     week:7, phase:"Peak", dates:"Aug 10–16",
     runs:[{label:"Run 1",distance:"3k"},{label:"Run 2",distance:"3k"},{label:"Run 3",distance:"3.5k"}],
+    speed:[{id:"s7a",label:"⚡ Wall Knee Drive",desc:"Practise for 10 minutes at least once this week. Learn the name: Wall Knee Drive. Drive the knee up against a wall — builds explosive power and sprint mechanics. Coaches will use this in training.",youtube_id:"ZW9rjy9TgGM"}],
     skills:[
       {id:"c7a",label:"🏑 Overhead Catch",desc:"Most accurate camogie frees from 20m in a row. Then overhead catching — time it with a partner.",youtube_id:"AhAH2ijnepY"},
       {id:"f7a",label:"⚽ The Roll Off",desc:"Practise the roll off — shoulder, turn, accelerate. Left and right. How many clean in a row?",youtube_id:"7NgYaavj7Ko"},
@@ -99,6 +108,7 @@ const WEEKS = [
   {
     week:8, phase:"Peak", dates:"Aug 17–23",
     runs:[{label:"Run 1",distance:"3k"},{label:"Run 2",distance:"3.5k"},{label:"Run 3",distance:"3.5k"}],
+    speed:[{id:"s8a",label:"⚡ 3 Point Start",desc:"Practise for 10 minutes at least once this week. Learn the name: 3 Point Start. Explosive start from hands and feet — this is how we sprint from a standing position in a game. Coaches will use this in training from September.",youtube_id:"rJ7SbSqqKS0"}],
     skills:[
       {id:"c8a",label:"🏑 Solo",desc:"30 mins — full pace, solo the sliotar end to end both sides. Final session before assessment!",youtube_id:"jhs9YPfh10Y"},
       {id:"f8a",label:"⚽ The Hook Kick",desc:"Solo the ball 20m clean, both feet. Compare to Week 2. Then hook kick for score — compare to Week 3.",youtube_id:"yEViD8o4ZWI"},
@@ -118,15 +128,17 @@ const SPORT_LABEL = "🏑⚽ Camogie & LGFA Football";
 
 const runKey   = (week, n)  => `w${week}-run${n}`;
 const skillKey = (week, id) => `w${week}-skill-${id}`;
+const speedKey = (week, id) => `w${week}-speed-${id}`;
 const squadKey = (week)     => `w${week}-squad`;
 
-const PTS = { run:3, skill:2, squad:4 };
+const PTS = { run:3, skill:2, speed:2, squad:4 };
 
 function totalPts(checks) {
   let p = 0;
   WEEKS.forEach(w => {
     w.runs.forEach((_,i)  => { if(checks[runKey(w.week,i)])   p+=PTS.run; });
     w.skills.forEach(s    => { if(checks[skillKey(w.week,s.id)]) p+=PTS.skill; });
+    (w.speed||[]).forEach(s => { if(checks[speedKey(w.week,s.id)]) p+=PTS.speed; });
     if(checks[squadKey(w.week)]) p+=PTS.squad;
   });
   return p;
@@ -136,12 +148,13 @@ function weekPts(w, checks) {
   let p = 0;
   w.runs.forEach((_,i) => { if(checks[runKey(w.week,i)]) p+=PTS.run; });
   w.skills.forEach(s   => { if(checks[skillKey(w.week,s.id)]) p+=PTS.skill; });
+  (w.speed||[]).forEach(s => { if(checks[speedKey(w.week,s.id)]) p+=PTS.speed; });
   if(checks[squadKey(w.week)]) p+=PTS.squad;
   return p;
 }
 
 function weekMaxPts(w) {
-  return w.runs.length*PTS.run + w.skills.length*PTS.skill + PTS.squad;
+  return w.runs.length*PTS.run + w.skills.length*PTS.skill + (w.speed||[]).length*PTS.speed + PTS.squad;
 }
 
 const CSS = `
@@ -157,7 +170,22 @@ const CSS = `
   --shadow-lg:0 8px 40px rgba(163,22,33,0.18);
 }
 body{font-family:'Lato',sans-serif;background:var(--bg);color:var(--dark);min-height:100vh;-webkit-font-smoothing:antialiased}
-.shell{max-width:480px;width:100%;margin:0 auto;padding-bottom:88px}
+.shell{max-width:560px;width:100%;margin:0 auto;padding-bottom:88px}
+@media(min-width:640px){
+  .shell{max-width:720px}
+  .home-wrap,.admin-wrap,.wk-detail{padding:20px 28px}
+  .hdr{padding:20px 28px 0}
+  .week-grid{grid-template-columns:repeat(8,1fr)}
+  .pts-row{gap:16px}
+  .pts-box .num{font-size:44px}
+  .welcome-card{padding:28px 26px}
+  .welcome-card h2{font-size:40px}
+}
+@media(min-width:900px){
+  .shell{max-width:960px}
+  .home-wrap,.admin-wrap{padding:24px 32px}
+  .hdr{padding:20px 32px 0}
+}
 .hdr{background:var(--g);padding:18px 18px 0;position:sticky;top:0;z-index:100;border-bottom:3px solid var(--gold)}
 .hdr-row{display:flex;align-items:center;gap:12px;padding-bottom:14px}
 .crest{width:50px;height:50px;border-radius:50%;overflow:hidden;flex-shrink:0;box-shadow:0 0 0 2px var(--gold),0 0 0 4px rgba(255,255,255,0.15);background:white}
@@ -243,9 +271,11 @@ body{font-family:'Lato',sans-serif;background:var(--bg);color:var(--dark);min-he
 .skill-desc{font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:12px}
 .yt-wrap{border-radius:10px;overflow:hidden;position:relative;padding-bottom:56.25%;background:#000;margin-bottom:12px}
 .yt-wrap iframe{position:absolute;top:0;left:0;width:100%;height:100%;border:none}
-.yt-placeholder{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#4a0a0e 0%,#1a0405 100%);color:white;cursor:pointer;gap:8px}
-.yt-play{width:52px;height:52px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:22px}
-.yt-note{font-size:12px;opacity:0.7;text-align:center;padding:0 16px}
+.yt-placeholder{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;cursor:pointer;gap:8px;overflow:hidden}
+.yt-thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.yt-overlay{position:absolute;inset:0;background:rgba(0,0,0,0.25)}
+.yt-play{position:relative;z-index:2;width:56px;height:56px;border-radius:50%;background:rgba(255,0,0,0.9);display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 2px 12px rgba(0,0,0,0.4);flex-shrink:0}
+.yt-note{position:relative;z-index:2;font-size:12px;text-align:center;padding:0 16px;text-shadow:0 1px 3px rgba(0,0,0,0.8);font-weight:700}
 .mark-btn{width:100%;padding:11px;border:none;border-radius:10px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:18px;letter-spacing:0.05em;transition:all 0.2s}
 .mark-done{background:var(--g);color:white}
 .mark-done:hover{background:#7d1018}
@@ -353,6 +383,18 @@ export default function App() {
 
   async function toggleTask(taskKey, pts, label) {
     if (!player) return;
+    // Block future weeks — super admin can bypass
+    const weekMatch = taskKey.match(/^w(\d+)-/);
+    if (weekMatch && session?.user?.email !== SUPER_ADMIN_EMAIL) {
+      const weekNum  = parseInt(weekMatch[1], 10);
+      const weekStart = new Date("2026-06-29");
+      weekStart.setDate(weekStart.getDate() + (weekNum - 1) * 7);
+      weekStart.setHours(0,0,0,0);
+      if (new Date() < weekStart) {
+        showToast("🔒 This week has not started yet — come back later!");
+        return;
+      }
+    }
     const done = checks[taskKey];
     if (done) {
       await sb.from("task_completions").delete().eq("player_id", player.id).eq("task_key", taskKey);
@@ -374,7 +416,8 @@ export default function App() {
     setTab("home");
   }
 
-  const isAdmin = ADMIN_EMAILS.includes(session?.user?.email);
+  const isAdmin      = ADMIN_EMAILS.includes(session?.user?.email);
+  const isSuperAdmin = session?.user?.email === SUPER_ADMIN_EMAIL;
   const pts     = totalPts(checks);
   const weeksDone = WEEKS.filter(w => weekPts(w, checks) === weekMaxPts(w)).length;
 
@@ -389,6 +432,7 @@ export default function App() {
     { id:"progress", label:"Progress" },
     ...(isAdmin ? [{ id:"coaches", label:"Coaches" }] : []),
     ...(isAdmin ? [{ id:"admin",   label:"Admin"   }] : []),
+    ...(isSuperAdmin ? [{ id:"dashboard", label:"Dashboard" }] : []),
   ];
 
   return (
@@ -423,7 +467,7 @@ export default function App() {
           <HomeTab player={player} checks={checks} pts={pts} weeksDone={weeksDone} onNav={() => setTab("plan")} onToggle={toggleTask} showToast={showToast} />
         )}
         {session && (player || isAdmin) && tab === "plan" && (
-          <PlanTab checks={checks} onToggle={toggleTask} player={player} />
+          <PlanTab checks={checks} onToggle={toggleTask} player={player} showToast={showToast} />
         )}
         {session && (player || isAdmin) && tab === "progress" && (
           <ProgressTab player={player} checks={checks} isAdmin={isAdmin} />
@@ -435,6 +479,10 @@ export default function App() {
 
         {session && isAdmin && tab === "admin" && (
           <AdminTab allPlayers={allPlayers} session={session} onRefresh={loadAllPlayers} showToast={showToast} />
+        )}
+
+        {session && isSuperAdmin && tab === "dashboard" && (
+          <DashboardTab allPlayers={allPlayers} />
         )}
       </div>
       {toast && <div className="toast">{toast}</div>}
@@ -629,7 +677,7 @@ function LinkPlayerScreen({ onLink }) {
   );
 }
 
-function HomeTab({ player, checks, pts, weeksDone, onNav, onToggle }) {
+function HomeTab({ player, checks, pts, weeksDone, onNav, onToggle, showToast }) {
   const [activeWk, setActiveWk] = useState(0);
   const w = WEEKS[activeWk];
   const ps = PHASE_STYLE[w.phase];
@@ -670,7 +718,7 @@ function HomeTab({ player, checks, pts, weeksDone, onNav, onToggle }) {
           );
         })}
       </div>
-      <WeekDetail w={w} ps={ps} pct={pct} wPts={wPts} wMax={wMax} checks={checks} onToggle={onToggle} player={player} />
+      <WeekDetail w={w} ps={ps} pct={pct} wPts={wPts} wMax={wMax} checks={checks} onToggle={onToggle} player={player} showToast={showToast} />
       <button className="btn btn-ghost" style={{marginTop:4}} onClick={onNav}>VIEW FULL 8-WEEK PLAN →</button>
       <div style={{background:"linear-gradient(135deg,#7d1018 0%,var(--g) 100%)",borderRadius:"var(--radius)",padding:"16px 18px",marginTop:12,color:"white",textAlign:"center"}}>
         <div style={{fontSize:24,marginBottom:6}}>📱🏑⚽</div>
@@ -689,7 +737,7 @@ function HomeTab({ player, checks, pts, weeksDone, onNav, onToggle }) {
   );
 }
 
-function WeekDetail({ w, ps, pct, wPts, wMax, checks, onToggle, player }) {
+function WeekDetail({ w, ps, pct, wPts, wMax, checks, onToggle, player, showToast }) {
   const [expandedSkill, setExpandedSkill] = useState(null);
   const [expandedSquad, setExpandedSquad] = useState(false);
   const [playingVideo, setPlayingVideo]   = useState(null);
@@ -723,14 +771,62 @@ function WeekDetail({ w, ps, pct, wPts, wMax, checks, onToggle, player }) {
         <div className="prog-lbl">{wPts}/{wMax} pts this week · {pct}% complete</div>
       </div>
 
+      {/* ── Speed Mechanics ── */}
+      {(w.speed||[]).map((s) => {
+        const k    = speedKey(w.week, s.id);
+        const done = !!checks[k];
+        const open = expandedSkill === s.id;
+        return (
+          <div key={s.id} className="skill-card" style={{borderLeft:"4px solid #7b1fa2"}}>
+            <div className={`skill-hd${done?" done-hd":""}`} onClick={()=>{
+              if(open && !done) showToast("💪 Don't forget to tap 'Mark Complete' if you have done this activity!");
+              setExpandedSkill(open?null:s.id);
+            }}>
+              <div className={`skill-check${done?" done":""}`} style={done?{}:{borderColor:"#7b1fa2",cursor:"pointer"}}
+                onClick={e=>{e.stopPropagation();
+                  if(open && !done) showToast("💪 Don't forget to tap 'Mark Complete' if you have done this activity!");
+                  setExpandedSkill(open?null:s.id);
+                }}>{done?"✓":""}</div>
+              <div className="skill-hd-text">
+                <div className="skill-type" style={{color:"#7b1fa2"}}>⚡ Speed Mechanics · +{PTS.speed} pts</div>
+                <div className="skill-name">{s.label}</div>
+              </div>
+              <div className="pts-badge" style={{background:"#f3e5f5",color:"#7b1fa2"}}>+{PTS.speed}</div>
+              <div className={`expand-icon${open?" open":""}`}>⌄</div>
+            </div>
+            {open && (
+              <div className="skill-body">
+                <p className="skill-desc">{s.desc}</p>
+                <VideoEmbed ytId={s.youtube_id} playing={playingVideo===s.id} onPlay={()=>setPlayingVideo(s.id)} />
+                {canToggle && (
+                  <button className={`mark-btn${done?" mark-undone":" mark-done"}`}
+                    style={!done?{background:"#7b1fa2"}:{}}
+                    onClick={()=>onToggle(k,PTS.speed,s.label)}>
+                    {done?"✕ MARK INCOMPLETE":"✓ MARK COMPLETE"}
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {/* ── Camogie & Football Skills ── */}
       {w.skills.map((s) => {
         const k    = skillKey(w.week, s.id);
         const done = !!checks[k];
         const open = expandedSkill === s.id;
         return (
           <div key={s.id} className="skill-card">
-            <div className={`skill-hd${done?" done-hd":""}`} onClick={()=>setExpandedSkill(open?null:s.id)}>
-              <div className={`skill-check${done?" done":""}`}>{done?"✓":""}</div>
+            <div className={`skill-hd${done?" done-hd":""}`} onClick={()=>{
+              if(open && !done) showToast("💪 Don't forget to tap 'Mark Complete' if you have done this activity!");
+              setExpandedSkill(open?null:s.id);
+            }}>
+              <div className={`skill-check${done?" done":""}`} style={{cursor:"pointer"}}
+                onClick={e=>{e.stopPropagation();
+                  if(open && !done) showToast("💪 Don't forget to tap 'Mark Complete' if you have done this activity!");
+                  setExpandedSkill(open?null:s.id);
+                }}>{done?"✓":""}</div>
               <div className="skill-hd-text">
                 <div className="skill-type">🎯 Solo Skill · +{PTS.skill} pts</div>
                 <div className="skill-name">{s.label}</div>
@@ -758,7 +854,10 @@ function WeekDetail({ w, ps, pct, wPts, wMax, checks, onToggle, player }) {
         const done = !!checks[k];
         return (
           <div className="squad-card">
-            <div className="squad-hd" onClick={()=>setExpandedSquad(v=>!v)}>
+            <div className="squad-hd" onClick={()=>{
+              if(expandedSquad && !done) showToast("💪 Don't forget to tap 'Squad Session Done' if you have completed this!");
+              setExpandedSquad(v=>!v);
+            }}>
               <div className="squad-icon">👥</div>
               <div className="squad-hd-text">
                 <div className="squad-type">Squad Session · +{PTS.squad} pts</div>
@@ -788,14 +887,29 @@ function WeekDetail({ w, ps, pct, wPts, wMax, checks, onToggle, player }) {
 
 function VideoEmbed({ ytId, playing, onPlay, dark }) {
   const isPlaceholder = !ytId || ytId.startsWith("Demo");
+  // YouTube provides thumbnails at a predictable URL — hqdefault is reliable for all videos
+  const thumbUrl = ytId && !isPlaceholder
+    ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`
+    : null;
+
   return (
     <div className="yt-wrap" style={{marginBottom:12}}>
       {(isPlaceholder || !playing) ? (
-        <div className="yt-placeholder" style={dark?{background:"rgba(0,0,0,0.35)"}:{}} onClick={!isPlaceholder?onPlay:undefined}>
-          <div className="yt-play">{isPlaceholder?"🎬":"▶"}</div>
-          <div className="yt-note">
-            {isPlaceholder ? "Video demo coming soon" : "Tap to watch drill demonstration"}
-          </div>
+        <div className="yt-placeholder" onClick={!isPlaceholder?onPlay:undefined}>
+          {thumbUrl ? (
+            <>
+              <img className="yt-thumb" src={thumbUrl} alt="Video thumbnail" />
+              <div className="yt-overlay" />
+              <div className="yt-play">▶</div>
+              <div className="yt-note">Tap to watch</div>
+            </>
+          ) : (
+            <>
+              <div style={{position:"absolute",inset:0,background:"linear-gradient(135deg,#4a0a0e,#1a0405)"}} />
+              <div className="yt-play" style={{background:"var(--gold)"}}>🎬</div>
+              <div className="yt-note">Video coming soon</div>
+            </>
+          )}
         </div>
       ) : (
         <iframe src={`https://www.youtube.com/embed/${ytId}?autoplay=1&rel=0`} allow="autoplay; encrypted-media" allowFullScreen />
@@ -804,7 +918,7 @@ function VideoEmbed({ ytId, playing, onPlay, dark }) {
   );
 }
 
-function PlanTab({ checks, onToggle, player }) {
+function PlanTab({ checks, onToggle, player, showToast }) {
   return (
     <div className="wk-detail">
       <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:18,color:"var(--g)",marginBottom:12,letterSpacing:"0.02em"}}>
@@ -817,7 +931,7 @@ function PlanTab({ checks, onToggle, player }) {
         const pct = Math.round((wP/wM)*100);
         return (
           <div key={i} style={{marginBottom:24}}>
-            <WeekDetail w={w} ps={ps} pct={pct} wPts={wP} wMax={wM} checks={checks} onToggle={onToggle} player={player} />
+            <WeekDetail w={w} ps={ps} pct={pct} wPts={wP} wMax={wM} checks={checks} onToggle={onToggle} player={player} showToast={showToast} />
           </div>
         );
       })}
@@ -891,13 +1005,14 @@ function ProgressTab({ player, checks, isAdmin }) {
   // ── Weekly activity for bar chart ─────────────────────────
   const weeklyData = useMemo(() => {
     return WEEKS.map(w => {
-      let runs = 0, skills = 0, squad = 0;
+      let runs = 0, skills = 0, speed = 0, squad = 0;
       w.runs.forEach((_, i) => { if (checks[runKey(w.week, i)])   runs++; });
       w.skills.forEach(s    => { if (checks[skillKey(w.week, s.id)]) skills++; });
+      (w.speed||[]).forEach(s => { if (checks[speedKey(w.week, s.id)]) speed++; });
       if (checks[squadKey(w.week)]) squad = 1;
-      const total   = runs + skills + squad;
-      const maxPoss = w.runs.length + w.skills.length + 1;
-      return { week: w.week, runs, skills, squad, total, maxPoss };
+      const total   = runs + skills + speed + squad;
+      const maxPoss = w.runs.length + w.skills.length + (w.speed||[]).length + 1;
+      return { week: w.week, runs, skills, speed, squad, total, maxPoss };
     });
   }, [checks]);
 
@@ -920,6 +1035,12 @@ function ProgressTab({ player, checks, isAdmin }) {
             type  = "skill"; week = w.week;
           }
         });
+        (w.speed||[]).forEach(s => {
+          if (speedKey(w.week, s.id) === k) {
+            label = s.label.replace(/^[^\w]+/, "").split(":")[0].trim();
+            type  = "speed"; week = w.week;
+          }
+        });
         if (squadKey(w.week) === k) {
           label = `Squad Session`; type = "squad"; week = w.week;
         }
@@ -937,6 +1058,7 @@ function ProgressTab({ player, checks, isAdmin }) {
   const typeStyle = {
     run:   { color:"var(--g)",  bg:"var(--g3)",  icon:"🏃" },
     skill: { color:"#2e7d32",   bg:"#e8f5e9",    icon:"🏑" },
+    speed: { color:"#7b1fa2",   bg:"#f3e5f5",    icon:"⚡" },
     squad: { color:"#c45e00",   bg:"#fff3e0",    icon:"👥" },
   };
 
@@ -999,7 +1121,7 @@ function ProgressTab({ player, checks, isAdmin }) {
 
         {/* Legend */}
         <div style={{display:"flex",gap:12,marginBottom:10,flexWrap:"wrap"}}>
-          {[["var(--g)","Runs"],["#2e7d32","Skills"],["#c45e00","Squad"]].map(([c,l]) => (
+          {[["var(--g)","Runs"],["#2e7d32","Skills"],["#7b1fa2","Speed"],["#c45e00","Squad"]].map(([c,l]) => (
             <div key={l} style={{display:"flex",alignItems:"center",gap:4}}>
               <div style={{width:10,height:10,borderRadius:2,background:c,flexShrink:0}}/>
               <span style={{fontSize:10,color:"var(--muted)"}}>{l}</span>
@@ -1013,6 +1135,7 @@ function ProgressTab({ player, checks, isAdmin }) {
             const barH    = Math.max((w.total / maxWeekActivity) * 72, w.total > 0 ? 4 : 0);
             const runH    = (w.runs   / w.total || 0) * barH;
             const skillH  = (w.skills / w.total || 0) * barH;
+            const speedH  = (w.speed  / w.total || 0) * barH;
             const squadH  = (w.squad  / w.total || 0) * barH;
             const allDone = w.total === w.maxPoss;
             return (
@@ -1023,6 +1146,9 @@ function ProgressTab({ player, checks, isAdmin }) {
                   {w.squad > 0 && (
                     <div style={{width:"100%",height:Math.max(squadH,2),background:"#c45e00",
                                  borderRadius:"2px 2px 0 0",minHeight:3}}/>
+                  )}
+                  {w.speed > 0 && (
+                    <div style={{width:"100%",height:Math.max(speedH,2),background:"#7b1fa2",minHeight:3}}/>
                   )}
                   {w.skills > 0 && (
                     <div style={{width:"100%",height:Math.max(skillH,2),background:"#2e7d32",minHeight:3}}/>
@@ -1772,6 +1898,357 @@ function ResultsTable({ allPlayers, period, ptsMap = {} }) {
   );
 }
 
+
+
+
+// ── DashboardTab ──────────────────────────────────────────────────────────────
+// Super-admin only. Pulls live data from Supabase.
+function DashboardTab({ allPlayers }) {
+  const [stats,       setStats]       = useState(null);
+  const [loading,     setLoading]     = useState(true);
+  const [recentLog,   setRecentLog]   = useState([]);
+  const [claimedIds,  setClaimedIds]  = useState(new Set());
+  const [ptsMap,      setPtsMap]      = useState({});
+  const [weeklyMap,   setWeeklyMap]   = useState({});  // { pid: { w1:pts, w2:pts, ... } }
+  const [activeView,  setActiveView]  = useState("overview");
+
+  useEffect(() => {
+    if (!allPlayers.length) return;
+    const ids = allPlayers.map(p => p.id);
+
+    Promise.all([
+      sb.from("task_completions").select("player_id,task_key,completed_at").in("player_id", ids),
+      sb.from("parent_players").select("player_id"),
+      sb.from("audit_log").select("user_email,player_name,action,detail,created_at").order("created_at",{ascending:false}).limit(20),
+      sb.from("fitness_tests").select("player_id,period,lap_time").in("player_id", ids),
+    ]).then(([{data:comps},{data:links},{data:logs},{data:fitness}]) => {
+
+      // Points per player
+      const byPlayer = {};
+      ids.forEach(id => { byPlayer[id] = {}; });
+      comps?.forEach(r => { if(byPlayer[r.player_id]) byPlayer[r.player_id][r.task_key]=true; });
+      const pm = {};
+      ids.forEach(id => { pm[id] = totalPts(byPlayer[id]); });
+      setPtsMap(pm);
+
+      // Weekly pts breakdown per player
+      const wm = {};
+      ids.forEach(id => {
+        wm[id] = {};
+        WEEKS.forEach(w => { wm[id][w.week] = weekPts(w, byPlayer[id]); });
+      });
+      setWeeklyMap(wm);
+
+      // Claimed players
+      setClaimedIds(new Set(links?.map(l => l.player_id) || []));
+
+      // Recent audit log
+      setRecentLog(logs || []);
+
+      // Summary stats
+      const totalSessions = comps?.length || 0;
+      const playersActive  = new Set(comps?.map(r => r.player_id)).size;
+      const avgPts = ids.length
+        ? Math.round(Object.values(pm).reduce((a,b)=>a+b,0) / ids.length)
+        : 0;
+      const topPlayer = allPlayers.slice().sort((a,b)=>(pm[b.id]||0)-(pm[a.id]||0))[0];
+
+      // This week sessions (last 7 days)
+      const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate()-7);
+      const thisWeekSessions = comps?.filter(r => r.completed_at && new Date(r.completed_at) > weekAgo).length || 0;
+
+      // Pre/post lap times
+      const preTimes  = fitness?.filter(f=>f.period==="pre"  && f.lap_time).length || 0;
+      const postTimes = fitness?.filter(f=>f.period==="post" && f.lap_time).length || 0;
+
+      setStats({ totalSessions, playersActive, avgPts, topPlayer, thisWeekSessions, preTimes, postTimes,
+                 registered: links?.length || 0, total: ids.length });
+      setLoading(false);
+    });
+  }, [allPlayers]);
+
+  // Current week number
+  const currentWeek = Math.min(Math.max(
+    Math.floor((new Date() - new Date("2026-06-29")) / (7*24*60*60*1000)) + 1, 1), 8);
+
+  // Sort players by pts desc
+  const sortedPlayers = allPlayers.slice().sort((a,b)=>(ptsMap[b.id]||0)-(ptsMap[a.id]||0));
+
+  // Action icon + colour for audit log
+  const actionStyle = {
+    task_complete:   { icon:"✅", color:"#2e7d32", bg:"#e8f5e9"  },
+    task_incomplete: { icon:"↩️", color:"#e65100", bg:"#fff3e0"  },
+    lap_saved:       { icon:"⏱", color:"#1565c0", bg:"#e3f2fd"  },
+    lap_cleared:     { icon:"🗑", color:"#9e9e9e", bg:"#f5f5f5"  },
+    note_saved:      { icon:"📝", color:"#7b1fa2", bg:"#f3e5f5"  },
+  };
+
+  const fmtAgo = (ts) => {
+    if (!ts) return "";
+    const diff = Math.floor((Date.now() - new Date(ts)) / 1000);
+    if (diff < 60) return `${diff}s ago`;
+    if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+    if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+    return new Date(ts).toLocaleDateString("en-IE",{day:"numeric",month:"short"});
+  };
+
+  // Max pts for bar scaling
+  const maxPts = Math.max(...sortedPlayers.map(p=>ptsMap[p.id]||0), 1);
+  const maxPossible = WEEKS.reduce((a,w)=>a+weekMaxPts(w),0);
+
+  if (loading) return (
+    <div className="admin-wrap">
+      <div className="loader"><div className="spinner"/>Loading dashboard…</div>
+    </div>
+  );
+
+  return (
+    <div className="admin-wrap">
+
+      {/* ── Header ── */}
+      <div style={{background:"linear-gradient(135deg,var(--g),#4a0a0e)",borderRadius:"var(--radius)",
+                   padding:"16px 18px",marginBottom:14,color:"#fff",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",right:-10,bottom:-14,fontSize:90,opacity:0.06,pointerEvents:"none"}}>📊</div>
+        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:28,color:"var(--gold)",letterSpacing:"0.02em"}}>
+          SQUAD DASHBOARD
+        </div>
+        <div style={{fontSize:12,opacity:0.7,marginTop:2}}>
+          Fingallians 2015 Girls · Week {currentWeek} of 8 · Summer Challenge 2026
+        </div>
+        {/* Sub-nav */}
+        <div style={{display:"flex",gap:6,marginTop:12,flexWrap:"wrap"}}>
+          {[["overview","Overview"],["squad","Squad"],["weekly","By Week"],["log","Activity Log"]].map(([v,l])=>(
+            <button key={v} onClick={()=>setActiveView(v)} style={{
+              padding:"5px 12px",borderRadius:16,border:"1px solid rgba(255,255,255,0.3)",
+              background:activeView===v?"rgba(255,255,255,0.2)":"transparent",
+              color:"#fff",fontSize:12,cursor:"pointer",fontFamily:"inherit",fontWeight:activeView===v?700:400,
+            }}>{l}</button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── OVERVIEW ── */}
+      {activeView === "overview" && <>
+
+        {/* Metric cards */}
+        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginBottom:14}}>
+          {[
+            { label:"Registered",    value:`${stats.registered}/${stats.total}`, sub:`${stats.total-stats.registered} not signed up`, color:"#2e7d32" },
+            { label:"Active players",value:stats.playersActive,                  sub:"at least 1 session logged",    color:"var(--g)"  },
+            { label:"Sessions (7d)", value:stats.thisWeekSessions,              sub:"logged in last 7 days",          color:"#1565c0"   },
+            { label:"Squad avg pts", value:stats.avgPts,                         sub:`of ${maxPossible} possible`,    color:"#b8860b"   },
+          ].map(s=>(
+            <div key={s.label} style={{background:"white",borderRadius:12,padding:"12px 14px",border:"1px solid #f0dede"}}>
+              <div style={{fontSize:10,color:"var(--muted)",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:4}}>{s.label}</div>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:32,color:s.color,lineHeight:1}}>{s.value}</div>
+              <div style={{fontSize:11,color:"var(--muted)",marginTop:3}}>{s.sub}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Top 5 leaderboard */}
+        <div style={{background:"white",borderRadius:14,padding:"14px",border:"1px solid #f0dede",marginBottom:14}}>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",
+                       letterSpacing:"0.04em",marginBottom:10}}>TOP PLAYERS</div>
+          {sortedPlayers.slice(0,5).map((p,i)=>{
+            const pts = ptsMap[p.id]||0;
+            const pct = Math.round((pts/maxPts)*100);
+            const medals = ["🥇","🥈","🥉"];
+            return (
+              <div key={p.id} style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+                <div style={{width:22,textAlign:"center",fontSize:i<3?18:12,flexShrink:0}}>
+                  {i<3 ? medals[i] : `${i+1}`}
+                </div>
+                <div style={{width:32,height:32,borderRadius:"50%",background:"var(--g)",color:"var(--gold)",
+                             display:"flex",alignItems:"center",justifyContent:"center",
+                             fontFamily:"'Barlow Condensed',sans-serif",fontSize:16,flexShrink:0}}>
+                  {p.name[0]}
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,fontWeight:700}}>{p.name}</div>
+                  <div style={{height:4,background:"#f0dede",borderRadius:2,marginTop:4,overflow:"hidden"}}>
+                    <div style={{height:"100%",width:`${pct}%`,background:i===0?"var(--gold)":"var(--g)",
+                                 borderRadius:2,transition:"width 0.4s"}}/>
+                  </div>
+                </div>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:20,color:"var(--g)",flexShrink:0}}>
+                  {pts}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Fitness summary */}
+        <div style={{background:"white",borderRadius:14,padding:"14px",border:"1px solid #f0dede",marginBottom:14}}>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",
+                       letterSpacing:"0.04em",marginBottom:10}}>FITNESS TESTING</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+            {[
+              {label:"Pre-summer timed", value:stats.preTimes,  color:"#1565c0"},
+              {label:"Post-summer timed",value:stats.postTimes, color:"#2e7d32"},
+            ].map(s=>(
+              <div key={s.label} style={{background:"var(--g3)",borderRadius:10,padding:"10px 12px",textAlign:"center"}}>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:28,color:s.color}}>{s.value}</div>
+                <div style={{fontSize:11,color:"var(--muted)",marginTop:2}}>{s.label}</div>
+                <div style={{fontSize:10,color:"var(--muted)",marginTop:2}}>of {stats.total} players</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Registration: unregistered players */}
+        {stats.total - stats.registered > 0 && (
+          <div style={{background:"white",borderRadius:14,padding:"14px",border:"1px solid #f0dede"}}>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",
+                         letterSpacing:"0.04em",marginBottom:10}}>
+              ⏳ NOT YET REGISTERED ({stats.total - stats.registered})
+            </div>
+            {allPlayers.filter(p=>!claimedIds.has(p.id)).map(p=>(
+              <div key={p.id} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",
+                                      borderBottom:"1px solid #f8f0f0"}}>
+                <div style={{width:28,height:28,borderRadius:"50%",background:"#e65100",color:"#fff",
+                             display:"flex",alignItems:"center",justifyContent:"center",
+                             fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,flexShrink:0}}>
+                  {p.name[0]}
+                </div>
+                <div style={{flex:1,fontSize:13,fontWeight:600}}>{p.name}</div>
+                <div style={{fontSize:11,color:"#e65100",fontWeight:700}}>No account</div>
+              </div>
+            ))}
+          </div>
+        )}
+      </>}
+
+      {/* ── SQUAD ── */}
+      {activeView === "squad" && (
+        <div style={{background:"white",borderRadius:14,padding:"14px",border:"1px solid #f0dede"}}>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",
+                       letterSpacing:"0.04em",marginBottom:10}}>ALL PLAYERS · {sortedPlayers.length} TOTAL</div>
+          {sortedPlayers.map((p,i)=>{
+            const pts    = ptsMap[p.id]||0;
+            const pct    = Math.round((pts/maxPossible)*100);
+            const active = claimedIds.has(p.id);
+            return (
+              <div key={p.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 0",
+                                      borderBottom:"1px solid #f8f0f0"}}>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:16,width:24,
+                             color:"var(--muted)",textAlign:"center",flexShrink:0}}>
+                  {i+1}
+                </div>
+                <div style={{width:32,height:32,borderRadius:"50%",
+                             background:active?"var(--g)":"#ccc",
+                             color:active?"var(--gold)":"#fff",
+                             display:"flex",alignItems:"center",justifyContent:"center",
+                             fontFamily:"'Barlow Condensed',sans-serif",fontSize:16,flexShrink:0}}>
+                  {p.name[0]}
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:13,fontWeight:700,display:"flex",alignItems:"center",gap:6}}>
+                    {p.name}
+                    {!active && <span style={{fontSize:10,color:"#e65100",fontWeight:700}}>no account</span>}
+                  </div>
+                  <div style={{height:3,background:"#f0dede",borderRadius:2,marginTop:4,overflow:"hidden"}}>
+                    <div style={{height:"100%",width:`${pct}%`,
+                                 background:i===0?"var(--gold)":"var(--g)",borderRadius:2}}/>
+                  </div>
+                </div>
+                <div style={{textAlign:"right",flexShrink:0}}>
+                  <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:18,color:"var(--g)"}}>{pts}</div>
+                  <div style={{fontSize:10,color:"var(--muted)"}}>{pct}%</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* ── WEEKLY BREAKDOWN ── */}
+      {activeView === "weekly" && (
+        <div style={{background:"white",borderRadius:14,padding:"14px",border:"1px solid #f0dede"}}>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",
+                       letterSpacing:"0.04em",marginBottom:10}}>POINTS BY WEEK · SQUAD</div>
+          {/* Week headers */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr repeat(8,40px)",gap:4,
+                       fontSize:10,fontWeight:700,color:"var(--muted)",textTransform:"uppercase",
+                       letterSpacing:"0.05em",marginBottom:6,textAlign:"center"}}>
+            <div style={{textAlign:"left"}}>Player</div>
+            {WEEKS.map(w=>(
+              <div key={w.week} style={{color:w.week===currentWeek?"var(--g)":"var(--muted)"}}>
+                W{w.week}
+              </div>
+            ))}
+          </div>
+          {sortedPlayers.map(p=>(
+            <div key={p.id} style={{display:"grid",gridTemplateColumns:"1fr repeat(8,40px)",gap:4,
+                                    padding:"5px 0",borderBottom:"1px solid #f8f0f0",
+                                    alignItems:"center",textAlign:"center"}}>
+              <div style={{fontSize:12,fontWeight:600,textAlign:"left",overflow:"hidden",
+                           textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.name.split(" ")[0]}</div>
+              {WEEKS.map(w=>{
+                const wPts  = weeklyMap[p.id]?.[w.week] || 0;
+                const wMax  = weekMaxPts(w);
+                const wPct  = Math.round((wPts/wMax)*100);
+                const bg    = wPts===0 ? "#f0dede" : wPct>=80 ? "var(--g)" : wPct>=40 ? "#e06060" : "#f5c0c0";
+                const col   = wPts===0 ? "var(--muted)" : wPct>=40 ? "#fff" : "var(--dark)";
+                return (
+                  <div key={w.week} style={{background:bg,borderRadius:4,padding:"3px 0",
+                                            fontSize:11,fontWeight:700,color:col}}>
+                    {wPts||""}
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+          {/* Legend */}
+          <div style={{display:"flex",gap:12,marginTop:10,fontSize:10,color:"var(--muted)"}}>
+            {[["var(--g)","High"],["#f5c0c0","Low"],["#f0dede","None"]].map(([bg,l])=>(
+              <div key={l} style={{display:"flex",alignItems:"center",gap:4}}>
+                <div style={{width:10,height:10,borderRadius:2,background:bg,flexShrink:0}}/>
+                {l}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── ACTIVITY LOG ── */}
+      {activeView === "log" && (
+        <div style={{background:"white",borderRadius:14,padding:"14px",border:"1px solid #f0dede"}}>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",
+                       letterSpacing:"0.04em",marginBottom:10}}>RECENT ACTIVITY</div>
+          {recentLog.length === 0 && (
+            <div style={{textAlign:"center",color:"var(--muted)",padding:"20px 0",fontSize:13}}>
+              No activity logged yet
+            </div>
+          )}
+          {recentLog.map((r,i)=>{
+            const s = actionStyle[r.action] || {icon:"•",color:"var(--muted)",bg:"#f5f5f5"};
+            return (
+              <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",
+                                   borderBottom:i<recentLog.length-1?"1px solid #f8f0f0":"none"}}>
+                <div style={{width:30,height:30,borderRadius:"50%",background:s.bg,
+                             display:"flex",alignItems:"center",justifyContent:"center",
+                             fontSize:14,flexShrink:0}}>
+                  {s.icon}
+                </div>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:12,fontWeight:600,color:"var(--dark)"}}>
+                    {r.player_name || r.user_email?.split("@")[0]}
+                  </div>
+                  <div style={{fontSize:11,color:"var(--muted)",marginTop:1}}>{r.detail}</div>
+                </div>
+                <div style={{fontSize:10,color:"var(--muted)",flexShrink:0,textAlign:"right"}}>
+                  {fmtAgo(r.created_at)}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 
 
