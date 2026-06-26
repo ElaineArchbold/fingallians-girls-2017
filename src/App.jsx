@@ -462,27 +462,42 @@ export default function App() {
   }, [adminSquadView]);
 
   async function loadPlayerData() {
-    const { data: link } = await sb
-      .from("parent_players")
-      .select("player_id, players(id,name,squad)")
-      .eq("user_id", session.user.id)
-      .maybeSingle();
-    // Only accept the link if the player belongs to this app's squad
-    // Treat null squad as '2015' for existing players before migration
-    const playerSquad = link?.players?.squad || '2015';
-    if (link?.players && playerSquad === SQUAD) {
-      setPlayer(link.players);
-      const { data: comps } = await sb
-        .from("task_completions")
-        .select("task_key")
-        .eq("player_id", link.players.id);
-      const c = {};
-      comps?.forEach(r => { c[r.task_key] = true; });
-      setChecks(c);
-    } else {
-      // Wrong squad or no link — clear player so LinkPlayerScreen shows
-      setPlayer(null);
-      setChecks({});
+    try {
+      // Step 1: get the player_id link
+      const { data: link, error: linkErr } = await sb
+        .from("parent_players")
+        .select("player_id")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
+
+      if (linkErr) console.error("link error:", linkErr);
+
+      if (link?.player_id) {
+        // Step 2: get the player details directly
+        const { data: playerData, error: playerErr } = await sb
+          .from("players")
+          .select("id, name, squad")
+          .eq("id", link.player_id)
+          .maybeSingle();
+
+        if (playerErr) console.error("player error:", playerErr);
+
+        if (playerData) {
+          const playerSquad = playerData.squad || SQUAD;
+          if (playerSquad === SQUAD) {
+            setPlayer(playerData);
+            const { data: comps } = await sb
+              .from("task_completions")
+              .select("task_key")
+              .eq("player_id", playerData.id);
+            const c = {};
+            comps?.forEach(r => { c[r.task_key] = true; });
+            setChecks(c);
+          }
+        }
+      }
+    } catch(e) {
+      console.error("loadPlayerData error:", e);
     }
     setPlayerLoaded(true);
   }
@@ -519,24 +534,15 @@ export default function App() {
   }
 
   async function linkPlayer(playerId) {
-    // Double-check this player belongs to the correct squad before linking
-    const { data: p } = await sb.from("players").select("squad").eq("id", playerId).maybeSingle();
-    const pSquad = p?.squad || '2015';
-    if (!p || pSquad !== SQUAD) {
-      showToast("❌ This player is not in the correct squad for this app.");
-      return;
+    try {
+      await sb.from("parent_players")
+        .upsert({ user_id: session.user.id, player_id: playerId }, { onConflict: "user_id" });
+      showToast("🎉 Player linked! Loading your dashboard…");
+      setTimeout(() => window.location.reload(), 1500);
+    } catch(e) {
+      showToast("❌ Something went wrong — please try again.");
+      console.error(e);
     }
-    await sb.from("parent_players")
-      .upsert({ user_id: session.user.id, player_id: playerId }, { onConflict:"user_id,player_id" });
-    // Manually load the player data inline to avoid state timing issues
-    const { data: newLink } = await sb
-      .from("parent_players")
-      .select("player_id, players(id,name,squad)")
-      .eq("user_id", session.user.id)
-      .maybeSingle();
-    // Reload the page — cleanest way to pick up the new link with no state race conditions
-    showToast("🎉 Player linked! Loading your dashboard…");
-    setTimeout(() => window.location.reload(), 1000);
   }
 
   const isAdmin      = ADMIN_EMAILS.includes(session?.user?.email);
@@ -601,7 +607,7 @@ export default function App() {
         {session && playerLoaded && !player && !isAdmin && (
           <LinkPlayerScreen userId={session.user.id} onLink={linkPlayer} showToast={showToast} />
         )}
-        {session && player && tab === "home" && (
+        {session && (player || isAdmin) && tab === "home" && (
           <HomeTab player={player} checks={checks} pts={pts} weeksDone={weeksDone} onNav={() => setTab("plan")} onToggle={toggleTask} showToast={showToast} />
         )}
         {session && (player || isAdmin) && tab === "plan" && (
