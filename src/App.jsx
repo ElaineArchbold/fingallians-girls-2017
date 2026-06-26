@@ -868,14 +868,26 @@ function ContactForm({ player }) {
     formData.append("message", msg);
 
     if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        setErr("File is too large. Please upload an image or video under 10MB.");
-        setSending(false);
-        return;
-      }
+  const fileExt = file.name.split(".").pop();
+  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+  const filePath = `${player?.id || "unknown"}/${fileName}`;
 
-      formData.append("attachment", file, file.name);
-    }
+  const { error: uploadError } = await sb.storage
+    .from("coach_uploads")
+    .upload(filePath, file);
+
+  if (uploadError) {
+    setErr("Could not upload the file. Please try a smaller image or video.");
+    setSending(false);
+    return;
+  }
+
+  const { data } = sb.storage
+    .from("coach_uploads")
+    .getPublicUrl(filePath);
+
+  formData.append("file_link", data.publicUrl);
+}
 
     const res = await fetch(FORMSPREE_URL, {
       method: "POST",
