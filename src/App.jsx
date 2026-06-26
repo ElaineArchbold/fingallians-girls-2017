@@ -849,6 +849,7 @@ function LinkPlayerScreen({ onLink }) {
 function ContactForm({ player }) {
   const [open,    setOpen]    = useState(false);
   const [msg,     setMsg]     = useState("");
+  const [mediaLink, setMediaLink] = useState("");
   const [file,    setFile]    = useState(null);
   const [sending, setSending] = useState(false);
   const [sent,    setSent]    = useState(false);
@@ -856,53 +857,69 @@ function ContactForm({ player }) {
   const fileRef = useRef(null);
 
   async function handleSubmit() {
-  if (!msg.trim()) { setErr("Please add a message before sending."); return; }
+    if (!msg.trim() && !mediaLink.trim() && !file) {
+      setErr("Please add a message, a media link, or attach a small photo/video.");
+      return;
+    }
 
-  setSending(true);
-  setErr("");
+    setSending(true);
+    setErr("");
 
-  try {
-    const formData = new FormData();
-    formData.append("player_name", player?.name || "Unknown");
-    formData.append("squad", SQUAD_LABEL);
-    formData.append("message", msg);
+    try {
+      const formData = new FormData();
+      formData.append("player_name", player?.name || "Unknown");
+      formData.append("squad", SQUAD_LABEL);
+      formData.append("message", msg || "No message added.");
+      formData.append("media_link", mediaLink || "No media link added.");
 
-    if (file) {
-  const fileExt = file.name.split(".").pop();
-  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
-  const filePath = `${player?.id || "unknown"}/${fileName}`;
+      if (file) {
+        if (file.size > 45 * 1024 * 1024) {
+          setErr("This file is too large. Please upload it to Google Drive/iCloud/OneDrive and paste the sharing link instead.");
+          setSending(false);
+          return;
+        }
 
-  const { error: uploadError } = await sb.storage
-    .from("coach_uploads")
-    .upload(filePath, file);
+        const fileExt = file.name.split(".").pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`;
+        const filePath = `${player?.id || "unknown"}/${fileName}`;
 
-  if (uploadError) {
-    setErr("Could not upload the file. Please try a smaller image or video.");
-    setSending(false);
-    return;
-  }
+        const { error: uploadError } = await sb.storage
+          .from("coach_uploads")
+          .upload(filePath, file);
 
-  const { data } = sb.storage
-    .from("coach_uploads")
-    .getPublicUrl(filePath);
+        if (uploadError) {
+          setErr("Could not upload the file. Please paste a Google Drive/iCloud/OneDrive link instead.");
+          setSending(false);
+          return;
+        }
 
-  formData.append("file_link", data.publicUrl);
-}
+        const { data } = sb.storage
+          .from("coach_uploads")
+          .getPublicUrl(filePath);
 
-    const res = await fetch(FORMSPREE_URL, {
-      method: "POST",
-      body: formData,
-      headers: { Accept: "application/json" },
-    });
+        formData.append("file_link", data.publicUrl);
+      }
+
+      const res = await fetch(FORMSPREE_URL, {
+        method: "POST",
+        body: formData,
+        headers: { Accept: "application/json" },
+      });
+
       if (res.ok) {
-        setSent(true); setMsg(""); setFile(null);
+        setSent(true);
+        setMsg("");
+        setMediaLink("");
+        setFile(null);
         setTimeout(() => { setSent(false); setOpen(false); }, 3000);
       } else {
-        setErr("Something went wrong — please try again.");
+        const data = await res.json().catch(() => null);
+        setErr(data?.error || data?.errors?.[0]?.message || "Something went wrong — please try again.");
       }
     } catch {
       setErr("Could not send — check your connection.");
     }
+
     setSending(false);
   }
 
@@ -929,22 +946,25 @@ function ContactForm({ player }) {
         <>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
             <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:18,color:"white",letterSpacing:"0.02em"}}>MESSAGE THE COACHES</div>
-            <button onClick={() => { setOpen(false); setErr(""); setMsg(""); setFile(null); }}
+            <button onClick={() => { setOpen(false); setErr(""); setMsg(""); setMediaLink(""); setFile(null); }}
               style={{background:"rgba(255,255,255,0.15)",border:"none",borderRadius:"50%",
                       width:28,height:28,cursor:"pointer",color:"white",fontSize:16,
                       display:"flex",alignItems:"center",justifyContent:"center"}}>✕</button>
           </div>
+
           {player && (
             <div style={{fontSize:12,color:"rgba(255,255,255,0.7)",marginBottom:12}}>
               Sending as: <strong style={{color:"var(--gold)"}}>{player.name}</strong>
             </div>
           )}
+
           {err && (
             <div style={{background:"rgba(255,0,0,0.15)",borderRadius:8,padding:"8px 12px",
                          fontSize:12,color:"#ffcccc",marginBottom:10}}>{err}</div>
           )}
+
           <textarea
-            placeholder="Write your message here — share a video link, ask a question, or let the coaches know how you're getting on!"
+            placeholder="Write your message here — tell the coaches what you are sending or ask a question."
             value={msg}
             onChange={e => setMsg(e.target.value)}
             rows={4}
@@ -953,6 +973,21 @@ function ContactForm({ player }) {
                     fontFamily:"'Lato',sans-serif",resize:"vertical",outline:"none",
                     boxSizing:"border-box",marginBottom:10}}
           />
+
+          <input
+            type="url"
+            placeholder="Paste Google Drive, iCloud, OneDrive or video link here"
+            value={mediaLink}
+            onChange={e => setMediaLink(e.target.value)}
+            style={{width:"100%",background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.2)",
+                    borderRadius:10,padding:"10px 12px",fontSize:13,color:"white",
+                    fontFamily:"'Lato',sans-serif",outline:"none",boxSizing:"border-box",marginBottom:8}}
+          />
+
+          <div style={{fontSize:11,color:"rgba(255,255,255,0.68)",lineHeight:1.5,marginBottom:12}}>
+            Large videos: upload to Google Drive/iCloud/OneDrive, set sharing to <strong>Anyone with the link can view</strong>, then paste the link above.
+          </div>
+
           <div style={{marginBottom:12}}>
             <input type="file" ref={fileRef} accept="image/*,video/*"
               onChange={e => setFile(e.target.files[0])}
@@ -961,7 +996,7 @@ function ContactForm({ player }) {
               style={{background:"rgba(255,255,255,0.12)",border:"1px solid rgba(255,255,255,0.25)",
                       borderRadius:10,padding:"8px 14px",color:"white",fontSize:12,
                       cursor:"pointer",fontFamily:"'Lato',sans-serif",fontWeight:700}}>
-              📎 {file ? file.name : "Attach a photo or video"}
+              📎 {file ? file.name : "Attach small photo/video"}
             </button>
             {file && (
               <button onClick={() => setFile(null)}
@@ -970,7 +1005,11 @@ function ContactForm({ player }) {
                 Remove
               </button>
             )}
+            <div style={{fontSize:11,color:"rgba(255,255,255,0.55)",marginTop:6}}>
+              Direct upload works best for small files only. Use a sharing link for big videos.
+            </div>
           </div>
+
           <button onClick={handleSubmit} disabled={sending}
             style={{width:"100%",background:"var(--gold)",color:"var(--dark)",border:"none",
                     borderRadius:10,padding:"12px",fontFamily:"'Barlow Condensed',sans-serif",
@@ -983,7 +1022,6 @@ function ContactForm({ player }) {
     </div>
   );
 }
-
 // Keep for any legacy references
 function EmailCoachesButton({ label = "📧 Message the Coaches", player }) {
   return <ContactForm player={player} />;
