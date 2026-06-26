@@ -468,7 +468,9 @@ export default function App() {
       .eq("user_id", session.user.id)
       .maybeSingle();
     // Only accept the link if the player belongs to this app's squad
-    if (link?.players && link.players.squad === SQUAD) {
+    // Treat null squad as '2015' for existing players before migration
+    const playerSquad = link?.players?.squad || '2015';
+    if (link?.players && playerSquad === SQUAD) {
       setPlayer(link.players);
       const { data: comps } = await sb
         .from("task_completions")
@@ -519,7 +521,8 @@ export default function App() {
   async function linkPlayer(playerId) {
     // Double-check this player belongs to the correct squad before linking
     const { data: p } = await sb.from("players").select("squad").eq("id", playerId).maybeSingle();
-    if (!p || p.squad !== SQUAD) {
+    const pSquad = p?.squad || '2015';
+    if (!p || pSquad !== SQUAD) {
       showToast("❌ This player is not in the correct squad for this app.");
       return;
     }
