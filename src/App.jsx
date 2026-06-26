@@ -534,16 +534,9 @@ export default function App() {
       .select("player_id, players(id,name,squad)")
       .eq("user_id", session.user.id)
       .maybeSingle();
-    if (newLink?.players) {
-      setPlayer(newLink.players);
-      const { data: comps } = await sb.from("task_completions").select("task_key").eq("player_id", newLink.players.id);
-      const c = {};
-      comps?.forEach(r => { c[r.task_key] = true; });
-      setChecks(c);
-    }
-    setPlayerLoaded(true);
-    showToast("🎉 Player linked!");
-    setTab("home");
+    // Reload the page — cleanest way to pick up the new link with no state race conditions
+    showToast("🎉 Player linked! Loading your dashboard…");
+    setTimeout(() => window.location.reload(), 1000);
   }
 
   const isAdmin      = ADMIN_EMAILS.includes(session?.user?.email);
@@ -608,7 +601,7 @@ export default function App() {
         {session && playerLoaded && !player && !isAdmin && (
           <LinkPlayerScreen userId={session.user.id} onLink={linkPlayer} showToast={showToast} />
         )}
-        {session && (player || isAdmin) && tab === "home" && (
+        {session && player && tab === "home" && (
           <HomeTab player={player} checks={checks} pts={pts} weeksDone={weeksDone} onNav={() => setTab("plan")} onToggle={toggleTask} showToast={showToast} />
         )}
         {session && (player || isAdmin) && tab === "plan" && (
