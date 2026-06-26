@@ -428,6 +428,7 @@ export default function App() {
   const [player, setPlayer]     = useState(null);
   const [checks, setChecks]     = useState({});
   const [allPlayers, setAllPlayers] = useState([]);
+  const [playerLoaded, setPlayerLoaded] = useState(false);
   // SuperAdmin can toggle between squads
   const [adminSquadView, setAdminSquadView] = useState(SQUAD);
 
@@ -446,9 +447,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (!session) { setPlayer(null); setChecks({}); return; }
+    if (!session) { setPlayer(null); setChecks({}); setPlayerLoaded(false); return; }
+    if (ADMIN_EMAILS.includes(session.user.email)) { setPlayerLoaded(true); loadAllPlayers(adminSquadView); return; }
+    setPlayerLoaded(false);
     loadPlayerData();
-    if (ADMIN_EMAILS.includes(session.user.email)) loadAllPlayers(adminSquadView);
   }, [session]);
 
   // Reload players when superadmin switches squad view
@@ -474,7 +476,12 @@ export default function App() {
       const c = {};
       comps?.forEach(r => { c[r.task_key] = true; });
       setChecks(c);
+    } else {
+      // Wrong squad or no link — clear player so LinkPlayerScreen shows
+      setPlayer(null);
+      setChecks({});
     }
+    setPlayerLoaded(true);
   }
 
   async function loadAllPlayers(squadFilter = SQUAD) {
@@ -578,7 +585,10 @@ export default function App() {
         )}
 
         {!session && <AuthScreen showToast={showToast} />}
-        {session && !player && !isAdmin && (
+        {session && !playerLoaded && !isAdmin && (
+          <div className="loader"><div className="spinner"/>Loading…</div>
+        )}
+        {session && playerLoaded && !player && !isAdmin && (
           <LinkPlayerScreen userId={session.user.id} onLink={linkPlayer} showToast={showToast} />
         )}
         {session && (player || isAdmin) && tab === "home" && (
