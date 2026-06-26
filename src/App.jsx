@@ -621,9 +621,9 @@ function AuthScreen({ showToast }) {
   const [tcAgreed, setTcAgreed]       = useState(false);
   const [showTc, setShowTc]           = useState(false);
 
-  const redirectUrl = SQUAD === "2017"
-    ? "https://fingallians-girls-2017.vercel.app"
-    : "https://fingallians-girls.vercel.app";
+ const redirectUrl = SQUAD === "2017"
+  ? "https://fingallians-2017-girls.vercel.app"
+  : "https://fingallians-2015-girls.vercel.app";
 
   async function submit() {
     setErr(""); setBusy(true);
