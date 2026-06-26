@@ -15,9 +15,22 @@ const SQUAD_SHORT = SQUAD === "2017" ? "2017 Girls" : "2015 Girls";
 
 const ADMIN_EMAILS = [
   "e.t.archbold@gmail.com",
+  ...(SQUAD === "2017"
+    ? [
+        "lee@ssa.ie",
+        "elaine.archbold@learnosity.com",
+      ]
+    : []),
 ];
 
-const ADMIN_PLAYER_NAMES = {};
+const ADMIN_PLAYER_NAMES = {
+  ...(SQUAD === "2017"
+    ? {
+        "lee@ssa.ie": "Rose Connolly",
+        "elaine.archbold@learnosity.com": "Rory Archbold Forde",
+      }
+    : {}),
+};
 
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
