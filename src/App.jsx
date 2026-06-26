@@ -856,19 +856,32 @@ function ContactForm({ player }) {
   const fileRef = useRef(null);
 
   async function handleSubmit() {
-    if (!msg.trim()) { setErr("Please add a message before sending."); return; }
-    setSending(true); setErr("");
-    try {
-      const formData = new FormData();
-      formData.append("player_name", player?.name || "Unknown");
-      formData.append("squad", SQUAD_LABEL);
-      formData.append("message", msg);
-      if (file) formData.append("attachment", file);
-      const res = await fetch(FORMSPREE_URL, {
-        method: "POST",
-        body: formData,
-        headers: { Accept: "application/json" },
-      });
+  if (!msg.trim()) { setErr("Please add a message before sending."); return; }
+
+  setSending(true);
+  setErr("");
+
+  try {
+    const formData = new FormData();
+    formData.append("player_name", player?.name || "Unknown");
+    formData.append("squad", SQUAD_LABEL);
+    formData.append("message", msg);
+
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        setErr("File is too large. Please upload an image or video under 10MB.");
+        setSending(false);
+        return;
+      }
+
+      formData.append("attachment", file, file.name);
+    }
+
+    const res = await fetch(FORMSPREE_URL, {
+      method: "POST",
+      body: formData,
+      headers: { Accept: "application/json" },
+    });
       if (res.ok) {
         setSent(true); setMsg(""); setFile(null);
         setTimeout(() => { setSent(false); setOpen(false); }, 3000);
