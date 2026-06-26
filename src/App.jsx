@@ -469,10 +469,11 @@ export default function App() {
 
   // Reload players when superadmin switches squad view
   useEffect(() => {
-    if (session && ADMIN_EMAILS.includes(session.user.email)) {
-      loadAllPlayers(adminSquadView);
-    }
-  }, [adminSquadView]);
+  if (session && ADMIN_EMAILS.includes(session.user.email)) {
+    const squadToLoad = session.user.email === SUPER_ADMIN_EMAIL ? adminSquadView : SQUAD;
+    loadAllPlayers(squadToLoad);
+  }
+}, [adminSquadView, session]);
 
   async function loadPlayerData() {
     const { data: link } = await sb
@@ -570,12 +571,12 @@ export default function App() {
   );
 
   const TABS = [
-    { id:"home",     label:"Home"     },
-    { id:"plan",     label:"Plan"     },
-    { id:"progress", label:"Progress" },
-    ...(isSuperAdmin ? [{ id:"admin",   label:"Admin"   }] : []),
-    ...(isSuperAdmin ? [{ id:"dashboard", label:"Dashboard" }] : []),
-  ];
+  { id:"home",     label:"Home"     },
+  { id:"plan",     label:"Plan"     },
+  { id:"progress", label:"Progress" },
+  ...(isAdmin ? [{ id:"admin", label:"Admin" }] : []),
+  ...(isAdmin ? [{ id:"dashboard", label:"Dashboard" }] : []),
+];
 
   // SuperAdmin squad toggle component
   const SuperAdminSquadToggle = () => isSuperAdmin ? (
@@ -632,17 +633,27 @@ export default function App() {
         )}
 
         {session && isAdmin && tab === "admin" && (
-          <div className="admin-wrap" style={{paddingTop:14}}>
-            <SuperAdminSquadToggle />
-            <AdminTab allPlayers={allPlayers} session={session} onRefresh={() => loadAllPlayers(adminSquadView)} showToast={showToast} currentSquad={adminSquadView} />
-          </div>
-        )}
-        {session && isSuperAdmin && tab === "dashboard" && (
-          <div className="admin-wrap" style={{paddingTop:14}}>
-            <SuperAdminSquadToggle />
-            <DashboardTab allPlayers={allPlayers} squadLabel={adminSquadView === "2017" ? "2017 Girls" : "2015 Girls"} />
-          </div>
-        )}
+  <div className="admin-wrap" style={{paddingTop:14}}>
+    <SuperAdminSquadToggle />
+    <AdminTab
+      allPlayers={allPlayers}
+      session={session}
+      onRefresh={() => loadAllPlayers(isSuperAdmin ? adminSquadView : SQUAD)}
+      showToast={showToast}
+      currentSquad={isSuperAdmin ? adminSquadView : SQUAD}
+    />
+  </div>
+)}
+
+{session && isAdmin && tab === "dashboard" && (
+  <div className="admin-wrap" style={{paddingTop:14}}>
+    <SuperAdminSquadToggle />
+    <DashboardTab
+      allPlayers={allPlayers}
+      squadLabel={(isSuperAdmin ? adminSquadView : SQUAD) === "2017" ? "2017 Girls" : "2015 Girls"}
+    />
+  </div>
+)}
       </div>
       {toast && <div className="toast">{toast}</div>}
     </>
