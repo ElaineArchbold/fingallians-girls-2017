@@ -9,7 +9,7 @@ const FORMSPREE_URL     = "https://formspree.io/f/mrewqpqo";
 
 // ── Squad config — set via Vercel environment variable VITE_SQUAD ─────────────
 const SQUAD = import.meta.env.VITE_SQUAD || "2015";
-const SQUAD_LABEL = SQUAD === "2017" ? "Fingallians Girls · U9" : "Fingallians Girls · U11";
+const SQUAD_LABEL = SQUAD === "2017" ? "Fingallians 2017 Girls" : "Fingallians 2015 Girls";
 const SQUAD_SHORT = SQUAD === "2017" ? "2017 Girls" : "2015 Girls";
 
 const ADMIN_EMAILS = [
@@ -1310,7 +1310,7 @@ function ProgressTab({ player, checks, isAdmin }) {
         <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:26,color:"var(--gold)",letterSpacing:"0.02em"}}>
           {player.name.split(" ")[0]}'s Progress
         </div>
-        <div style={{fontSize:11,opacity:0.65,marginTop:2}}>Fingallians Girls · Summer Challenge 2026</div>
+        <div style={{fontSize:11,opacity:0.65,marginTop:2}}>{SQUAD_LABEL} · Summer Challenge 2026</div>
         {isAdmin && (
           <div style={{fontSize:10,marginTop:4,background:"rgba(255,255,255,.12)",display:"inline-block",padding:"2px 8px",borderRadius:10,color:"rgba(255,255,255,.75)"}}>
             👁 Viewing as admin
