@@ -4,10 +4,15 @@ import { createClient } from "@supabase/supabase-js";
 const SUPABASE_URL      = "https://rzjaxsfqdajnncfdwemq.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_F7tdlTdu7-vYWkNynXW94g_mgzDZ-O_";
 const SUPER_ADMIN_EMAIL = "e.t.archbold@gmail.com";
+const COACH_EMAIL       = "Fingallians2015GirlsChallenge@gmail.com";
+
+// ── Squad config — set via Vercel environment variable VITE_SQUAD ─────────────
+const SQUAD = import.meta.env.VITE_SQUAD || "2015";
+const SQUAD_LABEL = SQUAD === "2017" ? "Fingallians Girls · U9" : "Fingallians Girls · U11";
+const SQUAD_SHORT = SQUAD === "2017" ? "U9 Girls" : "U11 Girls";
 
 const ADMIN_EMAILS = [
   "e.t.archbold@gmail.com",
-  
 ];
 
 const ADMIN_PLAYER_NAMES = {};
@@ -23,18 +28,17 @@ async function logAudit(userEmail, player, action, detail, oldValue = null, newV
       player_name: player?.name || null,
       action,
       detail,
+      squad:       SQUAD,
       old_value:   oldValue  ? String(oldValue)  : null,
       new_value:   newValue  ? String(newValue)  : null,
     });
-  } catch (_) {
-    // Audit failure should never break the main action
-  }
+  } catch (_) {}
 }
 
+const LOGO = "data:image/png;base64,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";
 
-const LOGO = "data:image/png;base64,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";
-
-const WEEKS = [
+// ── WEEKS arrays ──────────────────────────────────────────────────────────────
+const WEEKS_2015 = [
   {
     week:1, phase:"Foundation", dates:"Jun 29–Jul 5",
     runs:[{label:"Run 1",distance:"1.5k"},{label:"Run 2",distance:"1.5k"},{label:"Run 3",distance:"2k"}],
@@ -116,6 +120,91 @@ const WEEKS = [
     squad:{label:"Squad Session – Final Challenge",desc:"Re-run Week 2: (1) Camogie first touch relay — clean rounds in 5 mins? (2) Football solo relay — group drops count. Compare BOTH to Week 2. Screenshot and send to the coaches! 📸",youtube_id:"CAHGBytDaGw"},
   },
 ];
+
+const WEEKS_2017 = [
+  {
+    week:1, phase:"Foundation", dates:"Jun 29–Jul 5",
+    runs:[{label:"Run 1",distance:"1k"},{label:"Run 2",distance:"1k"},{label:"Run 3",distance:"1.5k"}],
+    speed:[{id:"s1a",label:"⚡ Fall Forward",desc:"Lean forward from your ankles like you're about to fall — then let your legs catch you! Practice for 10 minutes. This is how fast runners start. Learn the name: Fall Forward!",youtube_id:"PTmWJ4kk0yE"}],
+    skills:[
+      {id:"c1a",label:"🏑 Strike from the Hand",desc:"Head to the ball wall and strike the sliotar off both sides. See how many clean strikes you can do in a row — try to beat your score each time!",youtube_id:"jzwskF82xIk"},
+      {id:"f1a",label:"⚽ Punt Kick",desc:"Kick the ball off the wall and catch it on the way back. Try both feet — which one feels better? Keep going for 15 minutes and see how you get on!",youtube_id:"z1dLhAL4vi8"},
+    ],
+    squad:{label:"Squad Session – Striking & Kick-Pass",desc:"Get 3–4 girls together! (1) Practice Fall Forward — who has the best lean? Make each other laugh trying! (2) Camogie: take turns striking at the wall — count how many clean strikes in a row. (3) Football: kick-pass to a partner, count clean catches. Have fun with it! 🏑⚽",youtube_id:"pm5sdhJcd-Q"},
+  },
+  {
+    week:2, phase:"Foundation", dates:"Jul 6–12",
+    runs:[{label:"Run 1",distance:"1k"},{label:"Run 2",distance:"1.5k"},{label:"Run 3",distance:"1.5k"}],
+    speed:[{id:"s2a",label:"⚡ Stationary Arm Swing",desc:"Stand still and swing your arms like you're running — keep your elbows bent. Arms help your legs go faster! Practice for 10 minutes. Learn the name: Stationary Arm Swing!",youtube_id:"NUmUwXqG1pE"}],
+    skills:[
+      {id:"c2a",label:"🏑 Roll Lift",desc:"Roll the sliotar along the ground and scoop it up with your hurl. Try both sides! How many can you do in a row without dropping it?",youtube_id:"uO5Z21QjPMQ"},
+      {id:"f2a",label:"⚽ Hook Kick and Dummy Solo",desc:"Solo the ball, do a little dummy step, then hook kick! Try both feet and have fun with it — it doesn't have to be perfect yet!",youtube_id:"UzqN2U5Rdls"},
+    ],
+    squad:{label:"Squad Session – Arm Swing & Lifting",desc:"Get your crew together! (1) Stationary Arm Swing race — who has the best technique? (2) Camogie: Roll Lift relay — take turns, cheer each other on, count your clean lifts. (3) Football: solo and dummy — have a go and see how many clean ones you can do together!",youtube_id:"UEFHWItrOD0"},
+  },
+  {
+    week:3, phase:"Building", dates:"Jul 13–19",
+    runs:[{label:"Run 1",distance:"1k"},{label:"Run 2",distance:"1.5k"},{label:"Run 3",distance:"1.5k"}],
+    speed:[{id:"s3a",label:"⚡ A Skip",desc:"Skip with high knees in a rhythm — left, right, left, right. It looks funny but it makes you faster! Practice for 10 minutes. Learn the name: A Skip!",youtube_id:"2I4rDiFs6Ec"}],
+    skills:[
+      {id:"c3a",label:"🏑 Jab Lift",desc:"Jab your hurl under the sliotar and flick it up — see how many in a row you can manage. Keep trying, it gets easier the more you practice!",youtube_id:"0tmM594_gak"},
+      {id:"f3a",label:"⚽ Bounce, Solo and Change of Direction",desc:"Bounce the ball, solo, then change direction — keep control and see how long you can keep it going. Count your clean goes!",youtube_id:"zMV-ReshSVU"},
+    ],
+    squad:{label:"Squad Session – A Skip & Skills",desc:"Squad time! (1) A Skip together — who has the best rhythm? (2) Camogie: take turns at the wall — count your clean strikes and see if you can beat your score! (3) Football: Bounce, Solo and Change Direction — make it a game, who can do the most without losing the ball?",youtube_id:"CAHGBytDaGw"},
+  },
+  {
+    week:4, phase:"Building", dates:"Jul 20–26",
+    runs:[{label:"Run 1",distance:"1.5k"},{label:"Run 2",distance:"1.5k"},{label:"Run 3",distance:"2k"}],
+    speed:[{id:"s4a",label:"⚡ Ankling Drill",desc:"Super fast tiny steps — stay low and keep your feet moving quickly off the ground. Practice for 10 minutes. Learn the name: Ankling Drill!",youtube_id:"11xHsMcomf4"}],
+    skills:[
+      {id:"c4a",label:"🏑 Hook",desc:"Practice the hook with a friend if you can — one of you attacks, one defends. Safe technique first, then build up speed. Give it a go!",youtube_id:"P_5R-pXVqcs"},
+      {id:"f4a",label:"⚽ Decision Making and Passing",desc:"Pass the ball to a wall or a friend — mix up hand passes and kick passes. Move after every pass. Keep it moving!",youtube_id:"pPxInUTHroM"},
+    ],
+    squad:{label:"Squad Session – Ankling & Passing",desc:"Friends session! (1) Ankling Drill — fast feet, stay low, make it a race! (2) Camogie: practice the hook in pairs — one attacks, one defends. (3) Football: passing game — pass and move, keep it flowing. How many passes in a row without dropping?",youtube_id:"CAHGBytDaGw"},
+  },
+  {
+    week:5, phase:"Push", dates:"Jul 27–Aug 2",
+    runs:[{label:"Run 1",distance:"1.5k"},{label:"Run 2",distance:"1.5k"},{label:"Run 3",distance:"2k"}],
+    speed:[{id:"s5a",label:"⚡ A March",desc:"March with really high knees — lift them up as high as you can with every step. Practice for 10 minutes. Learn the name: A March!",youtube_id:"HISmA4pZWp0"}],
+    skills:[
+      {id:"c5a",label:"🏑 Block on the Ground",desc:"Practice getting low and blocking the sliotar safely. Body position is the most important thing — get that right first, then speed it up!",youtube_id:"Uq3HsM6bFvo"},
+      {id:"f5a",label:"⚽ Obstacle Course",desc:"Set up some cones or jumpers and solo through them, finishing with a shot. Time yourself — can you beat your time by the end of the week?",youtube_id:"yCUWUAnism4"},
+    ],
+    squad:{label:"Squad Session – A March & Blocking",desc:"Get together with your teammates! (1) A March parade — who has the best high knees? (2) Camogie: practice the block on the ground — take turns being the attacker and defender. (3) Football: obstacle course relay — set up some cones, take turns, cheer each other on!",youtube_id:"CAHGBytDaGw"},
+  },
+  {
+    week:6, phase:"Push", dates:"Aug 3–9",
+    runs:[{label:"Run 1",distance:"1.5k"},{label:"Run 2",distance:"2k"},{label:"Run 3",distance:"2k"}],
+    speed:[{id:"s6a",label:"⚡ Butt Kicks",desc:"Run on the spot and kick your heels up to your bottom as fast as you can. Practice for 10 minutes. Learn the name: Butt Kicks!",youtube_id:"p7OBdAJu9E8"}],
+    skills:[
+      {id:"c6a",label:"🏑 Frontal Block",desc:"Build up slowly — safe technique first, then go faster as you get comfortable. This one takes practice so stick with it!",youtube_id:"pFOXDqLbD7g"},
+      {id:"f6a",label:"⚽ The Body Catch",desc:"Take the ball into your chest and hold on tight — try both sides. Practice makes perfect with this one!",youtube_id:"8loHSEuEJx8"},
+    ],
+    squad:{label:"Squad Session – Butt Kicks & Body Catch",desc:"Crew session! (1) Butt Kicks race — who can go the fastest? (2) Camogie: frontal block practice — safe technique first, then build up speed together. (3) Football: body catch challenge — take turns and see who can take the cleanest catch. Count your successes!",youtube_id:"UEFHWItrOD0"},
+  },
+  {
+    week:7, phase:"Peak", dates:"Aug 10–16",
+    runs:[{label:"Run 1",distance:"1.5k"},{label:"Run 2",distance:"2k"},{label:"Run 3",distance:"2k"}],
+    speed:[{id:"s7a",label:"⚡ Wall Knee Drive",desc:"Stand facing a wall, hands on it, and drive one knee up at a time as fast as you can. Practice for 10 minutes. Learn the name: Wall Knee Drive!",youtube_id:"ZW9rjy9TgGM"}],
+    skills:[
+      {id:"c7a",label:"🏑 Overhead Catch",desc:"Toss the sliotar up and catch it cleanly above your head. Try with a friend — one throws, one catches! How high can you go?",youtube_id:"AhAH2ijnepY"},
+      {id:"f7a",label:"⚽ The Roll Off",desc:"Shoulder, turn and go! Try left and right — which side feels better? Count your clean ones and see if you can improve each day!",youtube_id:"7NgYaavj7Ko"},
+    ],
+    squad:{label:"Squad Session – Wall Knee Drive & Overhead",desc:"Team time! (1) Wall Knee Drive — explosive and fun, take turns and count! (2) Camogie: overhead catching with a partner — throw, catch, cheer! (3) Football: The Roll Off — left and right, take turns and see who can do the most in a row. Celebrate every good one! 🎉",youtube_id:"CAHGBytDaGw"},
+  },
+  {
+    week:8, phase:"Peak", dates:"Aug 17–23",
+    runs:[{label:"Run 1",distance:"1.5k"},{label:"Run 2",distance:"2k"},{label:"Run 3",distance:"2k"}],
+    speed:[{id:"s8a",label:"⚡ 3 Point Start",desc:"Hands and feet on the ground — explosive go! Like a sprinter at the Olympics. Practice for 10 minutes. Learn the name: 3 Point Start!",youtube_id:"rJ7SbSqqKS0"}],
+    skills:[
+      {id:"c8a",label:"🏑 Solo the Sliotar",desc:"Full pace, end to end, both sides — this is your last practice before we come back in September. Give it everything you've got!",youtube_id:"jhs9YPfh10Y"},
+      {id:"f8a",label:"⚽ The Hook Kick",desc:"Solo 20 metres cleanly then hook kick for a score. Compare to Week 2 — look how far you've come! Finish strong! 💪",youtube_id:"yEViD8o4ZWI"},
+    ],
+    squad:{label:"Squad Session – Final Challenge",desc:"Last squad session — make it count! (1) 3 Point Start race — explosive off the mark, who's the fastest? (2) Camogie: solo the sliotar end to end — final session, give it everything! (3) Football: Hook Kick challenge — compare to Week 2, have you improved? Take a group photo and send it to the coaches! 📸",youtube_id:"CAHGBytDaGw"},
+  },
+];
+
+const WEEKS = SQUAD === "2017" ? WEEKS_2017 : WEEKS_2015;
 
 const PHASE_STYLE = {
   Foundation:{ bg:"#fce4ec", accent:"#c2185b", chip:"#f48fb1" },
@@ -203,7 +292,6 @@ body{font-family:'Lato',sans-serif;background:var(--bg);color:var(--dark);min-he
 .auth-hero .crest-large img{width:100%;height:100%;object-fit:cover}
 .auth-hero h2{font-family:'Barlow Condensed',sans-serif;font-size:40px;color:white;line-height:0.95;letter-spacing:0.02em}
 .auth-hero p{font-size:13px;opacity:0.8;margin-top:10px;line-height:1.55}
-.pill{display:inline-flex;align-items:center;gap:5px;background:var(--gold);color:var(--dark);font-weight:900;font-size:11px;padding:5px 13px;border-radius:20px;margin-top:12px;letter-spacing:0.04em}
 .card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;margin-bottom:14px}
 .card-hd{padding:16px 18px 12px;border-bottom:1px solid #f5eaea}
 .card-hd h3{font-family:'Barlow Condensed',sans-serif;font-size:22px;letter-spacing:0.02em}
@@ -327,6 +415,9 @@ select.inp{appearance:none;cursor:pointer}
 .tc-check-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;cursor:pointer}
 .tc-check-row input[type="checkbox"]{width:18px;height:18px;accent-color:var(--g);flex-shrink:0;margin-top:1px;cursor:pointer}
 .tc-check-row span{font-size:13px;color:var(--mid);line-height:1.5}
+.squad-toggle{display:flex;gap:8px;margin-bottom:14px;align-items:center}
+.squad-toggle-btn{padding:6px 14px;border-radius:20px;border:2px solid var(--g);background:white;color:var(--g);font-family:'Barlow Condensed',sans-serif;font-size:14px;cursor:pointer;font-weight:700;transition:all 0.15s}
+.squad-toggle-btn.active{background:var(--g);color:white}
 `;
 
 export default function App() {
@@ -337,6 +428,8 @@ export default function App() {
   const [player, setPlayer]     = useState(null);
   const [checks, setChecks]     = useState({});
   const [allPlayers, setAllPlayers] = useState([]);
+  // SuperAdmin can toggle between squads
+  const [adminSquadView, setAdminSquadView] = useState(SQUAD);
 
   const showToast = useCallback((msg) => {
     setToast(msg);
@@ -355,13 +448,20 @@ export default function App() {
   useEffect(() => {
     if (!session) { setPlayer(null); setChecks({}); return; }
     loadPlayerData();
-    if (ADMIN_EMAILS.includes(session.user.email)) loadAllPlayers();
+    if (ADMIN_EMAILS.includes(session.user.email)) loadAllPlayers(adminSquadView);
   }, [session]);
+
+  // Reload players when superadmin switches squad view
+  useEffect(() => {
+    if (session && ADMIN_EMAILS.includes(session.user.email)) {
+      loadAllPlayers(adminSquadView);
+    }
+  }, [adminSquadView]);
 
   async function loadPlayerData() {
     const { data: link } = await sb
       .from("parent_players")
-      .select("player_id, players(id,name)")
+      .select("player_id, players(id,name,squad)")
       .eq("user_id", session.user.id)
       .maybeSingle();
     if (link?.players) {
@@ -376,14 +476,13 @@ export default function App() {
     }
   }
 
-  async function loadAllPlayers() {
-    const { data } = await sb.from("players").select("id,name").order("name");
+  async function loadAllPlayers(squadFilter = SQUAD) {
+    const { data } = await sb.from("players").select("id,name,squad").eq("squad", squadFilter).order("name");
     setAllPlayers(data || []);
   }
 
   async function toggleTask(taskKey, pts, label) {
     if (!player) return;
-    // Block future weeks — super admin can bypass
     const weekMatch = taskKey.match(/^w(\d+)-/);
     if (weekMatch && session?.user?.email !== SUPER_ADMIN_EMAIL) {
       const weekNum  = parseInt(weekMatch[1], 10);
@@ -430,10 +529,23 @@ export default function App() {
     { id:"home",     label:"Home"     },
     { id:"plan",     label:"Plan"     },
     { id:"progress", label:"Progress" },
-     ...(isSuperAdmin ? [{ id:"coaches", label:"Coaches" }] : []),
+    ...(isSuperAdmin ? [{ id:"coaches", label:"Coaches" }] : []),
     ...(isSuperAdmin ? [{ id:"admin",   label:"Admin"   }] : []),
     ...(isSuperAdmin ? [{ id:"dashboard", label:"Dashboard" }] : []),
   ];
+
+  // SuperAdmin squad toggle component
+  const SuperAdminSquadToggle = () => isSuperAdmin ? (
+    <div className="squad-toggle">
+      <span style={{fontSize:12,color:"var(--muted)",fontWeight:700}}>Squad:</span>
+      {["2015","2017"].map(s => (
+        <button key={s} className={`squad-toggle-btn${adminSquadView===s?" active":""}`}
+          onClick={() => setAdminSquadView(s)}>
+          {s === "2015" ? "U11 Girls" : "U9 Girls"}
+        </button>
+      ))}
+    </div>
+  ) : null;
 
   return (
     <>
@@ -445,7 +557,7 @@ export default function App() {
               <div className="crest"><img src={LOGO} alt="Fingallians GAA crest" /></div>
               <div>
                 <div className="hdr-title">FINGALLIANS GAA</div>
-                <div className="hdr-sub">2015 Girls · Summer Challenge 2026</div>
+                <div className="hdr-sub">{SQUAD_LABEL} · Summer Challenge 2026</div>
                 {player && <div className="hdr-player">👤 {player.name} · {pts} pts</div>}
               </div>
             </div>
@@ -472,17 +584,23 @@ export default function App() {
         {session && (player || isAdmin) && tab === "progress" && (
           <ProgressTab player={player} checks={checks} isAdmin={isAdmin} />
         )}
-
         {session && isAdmin && tab === "coaches" && (
-          <CoachesTab allPlayers={allPlayers} coachEmail={session.user.email} showToast={showToast} />
+          <div className="admin-wrap">
+            <SuperAdminSquadToggle />
+            <CoachesTab allPlayers={allPlayers} coachEmail={session.user.email} showToast={showToast} squadLabel={adminSquadView === "2017" ? "U9 Girls" : "U11 Girls"} />
+          </div>
         )}
-
         {session && isAdmin && tab === "admin" && (
-          <AdminTab allPlayers={allPlayers} session={session} onRefresh={loadAllPlayers} showToast={showToast} />
+          <div className="admin-wrap" style={{paddingTop:14}}>
+            <SuperAdminSquadToggle />
+            <AdminTab allPlayers={allPlayers} session={session} onRefresh={() => loadAllPlayers(adminSquadView)} showToast={showToast} currentSquad={adminSquadView} />
+          </div>
         )}
-
         {session && isSuperAdmin && tab === "dashboard" && (
-          <DashboardTab allPlayers={allPlayers} />
+          <div className="admin-wrap" style={{paddingTop:14}}>
+            <SuperAdminSquadToggle />
+            <DashboardTab allPlayers={allPlayers} squadLabel={adminSquadView === "2017" ? "U9 Girls" : "U11 Girls"} />
+          </div>
         )}
       </div>
       {toast && <div className="toast">{toast}</div>}
@@ -503,15 +621,17 @@ function AuthScreen({ showToast }) {
   const [tcAgreed, setTcAgreed]       = useState(false);
   const [showTc, setShowTc]           = useState(false);
 
+  const redirectUrl = SQUAD === "2017"
+    ? "https://fingallians-girls-2017.vercel.app"
+    : "https://fingallians-girls.vercel.app";
+
   async function submit() {
     setErr(""); setBusy(true);
     if (mode === "signup") {
       if (pw !== pw2) { setErr("Passwords don't match"); setBusy(false); return; }
       if (pw.length < 6) { setErr("Password must be at least 6 characters"); setBusy(false); return; }
       if (!tcAgreed) { setErr("Please agree to the Terms & Conditions to continue"); setBusy(false); return; }
-      const { error } = await sb.auth.signUp({ email, password: pw,
-        options: { emailRedirectTo: "https://fingallians-girls.vercel.app" }
-      });
+      const { error } = await sb.auth.signUp({ email, password: pw, options: { emailRedirectTo: redirectUrl } });
       if (error) { setErr(error.message); setBusy(false); return; }
       setSignedUpEmail(email);
       setMode("verify");
@@ -597,11 +717,11 @@ function AuthScreen({ showToast }) {
                 </div>
                 <div className="tc-section">
                   <strong>Data & Privacy</strong>
-                  <p>To use this app we store your child's first and last name and your email address. No other personal information is collected or stored. Your data is not shared with any third party and is used solely to manage participation in the 2026 Summer Challenge. You can request deletion of your data at any time by emailing <strong>Fingallians2015GirlsChallenge@gmail.com</strong>.</p>
+                  <p>To use this app we store your child's first and last name and your email address. No other personal information is collected or stored. Your data is not shared with any third party and is used solely to manage participation in the 2026 Summer Challenge. You can request deletion of your data at any time by contacting the coaches.</p>
                 </div>
                 <div className="tc-section">
                   <strong>Participation</strong>
-                  <p>This challenge is run voluntarily by Fingallians 2015 Girls coaches for the benefit of the players. Points and prizes are awarded in good faith. The club reserves the right to amend the challenge at any time.</p>
+                  <p>This challenge is run voluntarily by Fingallians Girls coaches for the benefit of the players. Points are awarded in good faith. The club reserves the right to amend the challenge at any time.</p>
                 </div>
               </>}
             </div>
@@ -631,7 +751,7 @@ function LinkPlayerScreen({ onLink }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    sb.from("players").select("id,name").order("name").then(({ data }) => {
+    sb.from("players").select("id,name").eq("squad", SQUAD).order("name").then(({ data }) => {
       setPlayers(data || []);
       setLoading(false);
     });
@@ -673,6 +793,18 @@ function LinkPlayerScreen({ onLink }) {
         <button className="link-btn" onClick={()=>sb.auth.signOut()}>Sign out</button>
       </div>
     </div>
+  );
+}
+
+// ── Email Button component ─────────────────────────────────────────────────────
+function EmailCoachesButton({ label = "📧 Email the Coaches" }) {
+  return (
+    <a href={`mailto:${COACH_EMAIL}`}
+      style={{display:"inline-block",background:"var(--gold)",color:"var(--dark)",
+              fontFamily:"'Barlow Condensed',sans-serif",fontSize:15,letterSpacing:"0.04em",
+              fontWeight:900,padding:"10px 20px",borderRadius:20,textDecoration:"none"}}>
+      {label}
+    </a>
   );
 }
 
@@ -722,12 +854,10 @@ function HomeTab({ player, checks, pts, weeksDone, onNav, onToggle, showToast })
       <div style={{background:"linear-gradient(135deg,#7d1018 0%,var(--g) 100%)",borderRadius:"var(--radius)",padding:"16px 18px",marginTop:12,color:"white",textAlign:"center"}}>
         <div style={{fontSize:24,marginBottom:6}}>📱🏑⚽</div>
         <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:20,letterSpacing:"0.02em",marginBottom:6}}>SHARE YOUR SKILLS!</div>
-        <div style={{fontSize:13,opacity:0.85,lineHeight:1.6,marginBottom:10}}>
+        <div style={{fontSize:13,opacity:0.85,lineHeight:1.6,marginBottom:12}}>
           Filmed yourself practising? Send your videos to the coaches — we'd love to see the girls putting in the work!
         </div>
-        <a href="mailto:Fingallians2015GirlsChallenge@gmail.com" style={{display:"inline-block",background:"var(--gold)",color:"var(--dark)",fontFamily:"'Barlow Condensed',sans-serif",fontSize:15,letterSpacing:"0.04em",fontWeight:900,padding:"8px 16px",borderRadius:20,textDecoration:"none"}}>
-          📧 Fingallians2015GirlsChallenge@gmail.com
-        </a>
+        <EmailCoachesButton />
       </div>
       <div style={{textAlign:"center",marginTop:14,paddingBottom:8}}>
         <button className="link-btn" style={{color:"var(--muted)",fontSize:13}} onClick={()=>sb.auth.signOut()}>Sign out</button>
@@ -770,7 +900,6 @@ function WeekDetail({ w, ps, pct, wPts, wMax, checks, onToggle, player, showToas
         <div className="prog-lbl">{wPts}/{wMax} pts this week · {pct}% complete</div>
       </div>
 
-      {/* ── Speed Mechanics ── */}
       {(w.speed||[]).map((s) => {
         const k    = speedKey(w.week, s.id);
         const done = !!checks[k];
@@ -810,7 +939,6 @@ function WeekDetail({ w, ps, pct, wPts, wMax, checks, onToggle, player, showToas
         );
       })}
 
-      {/* ── Camogie & Football Skills ── */}
       {w.skills.map((s) => {
         const k    = skillKey(w.week, s.id);
         const done = !!checks[k];
@@ -886,10 +1014,7 @@ function WeekDetail({ w, ps, pct, wPts, wMax, checks, onToggle, player, showToas
 
 function VideoEmbed({ ytId, playing, onPlay, dark }) {
   const isPlaceholder = !ytId || ytId.startsWith("Demo");
-  // YouTube provides thumbnails at a predictable URL — hqdefault is reliable for all videos
-  const thumbUrl = ytId && !isPlaceholder
-    ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg`
-    : null;
+  const thumbUrl = ytId && !isPlaceholder ? `https://img.youtube.com/vi/${ytId}/hqdefault.jpg` : null;
 
   return (
     <div className="yt-wrap" style={{marginBottom:12}}>
@@ -942,71 +1067,48 @@ function PlanTab({ checks, onToggle, player, showToast }) {
         </div>
         <div className="tc-section">
           <strong>Data & Privacy</strong>
-          <p>To use this app we store your child's first and last name and your email address. No other personal information is collected or stored. Your data is not shared with any third party and is used solely to manage participation in the 2026 Summer Challenge. You can request deletion of your data at any time by emailing <strong>Fingallians2015GirlsChallenge@gmail.com</strong>.</p>
+          <p>To use this app we store your child's first and last name and your email address. No other personal information is collected or stored. Your data is not shared with any third party and is used solely to manage participation in the 2026 Summer Challenge. You can request deletion of your data at any time by contacting the coaches.</p>
         </div>
         <div className="tc-section">
           <strong>Participation</strong>
-          <p>This challenge is run voluntarily by Fingallians 2015 Girls coaches for the benefit of the players. Points and prizes are awarded in good faith. The club reserves the right to amend the challenge at any time.</p>
+          <p>This challenge is run voluntarily by Fingallians Girls coaches for the benefit of the players. Points are awarded in good faith. The club reserves the right to amend the challenge at any time.</p>
         </div>
       </div>
     </div>
   );
 }
 
-// ── ProgressTab ───────────────────────────────────────────────────────────────
-// Shows the logged-in player's own progress: KMs run + skills practised per week
 function ProgressTab({ player, checks, isAdmin }) {
-  const [completions, setCompletions] = useState([]); // [{task_key, completed_at}]
+  const [completions, setCompletions] = useState([]);
   const [loading, setLoading]         = useState(true);
 
-  // Fetch completions WITH timestamps for this player
   useEffect(() => {
     if (!player) { setLoading(false); return; }
     sb.from("task_completions")
       .select("task_key, completed_at")
       .eq("player_id", player.id)
       .order("completed_at", { ascending: false })
-      .then(({ data }) => {
-        setCompletions(data || []);
-        setLoading(false);
-      });
+      .then(({ data }) => { setCompletions(data || []); setLoading(false); });
   }, [player?.id]);
 
-  // ── Derived stats ──────────────────────────────────────────
   const stats = useMemo(() => {
-    let sessions = 0, minutes = 0, pts = 0;
-    let totalKm = 0;
-
-    // minutes per activity type (from desc text or fixed values)
-    const runMins   = 20;  // average per run
-    const skillMins = 20;  // average per skill session
-    const squadMins = 20;  // squad session
-
+    let sessions = 0, minutes = 0, pts = 0, totalKm = 0;
+    const runMins = 20, skillMins = 20, squadMins = 20;
     WEEKS.forEach(w => {
       w.runs.forEach((r, i) => {
-        if (checks[runKey(w.week, i)]) {
-          sessions++; minutes += runMins; pts += PTS.run;
-          totalKm += parseFloat(r.distance) || 0;
-        }
+        if (checks[runKey(w.week, i)]) { sessions++; minutes += runMins; pts += PTS.run; totalKm += parseFloat(r.distance) || 0; }
       });
-      w.skills.forEach(s => {
-        if (checks[skillKey(w.week, s.id)]) {
-          sessions++; minutes += skillMins; pts += PTS.skill;
-        }
-      });
-      if (checks[squadKey(w.week)]) {
-        sessions++; minutes += squadMins; pts += PTS.squad;
-      }
+      w.skills.forEach(s => { if (checks[skillKey(w.week, s.id)]) { sessions++; minutes += skillMins; pts += PTS.skill; } });
+      if (checks[squadKey(w.week)]) { sessions++; minutes += squadMins; pts += PTS.squad; }
     });
     return { sessions, minutes, pts, totalKm };
   }, [checks]);
 
-  // ── Weekly activity for bar chart ─────────────────────────
   const weeklyData = useMemo(() => {
     return WEEKS.map(w => {
       let runs = 0, skills = 0, speed = 0, squad = 0;
-      w.runs.forEach((_, i) => { if (checks[runKey(w.week, i)])   runs++; });
-      w.skills.forEach(s    => { if (checks[skillKey(w.week, s.id)]) skills++; });
+      w.runs.forEach((_, i) => { if (checks[runKey(w.week, i)]) runs++; });
+      w.skills.forEach(s => { if (checks[skillKey(w.week, s.id)]) skills++; });
       (w.speed||[]).forEach(s => { if (checks[speedKey(w.week, s.id)]) speed++; });
       if (checks[squadKey(w.week)]) squad = 1;
       const total   = runs + skills + speed + squad;
@@ -1015,45 +1117,21 @@ function ProgressTab({ player, checks, isAdmin }) {
     });
   }, [checks]);
 
-  // ── Activity log — map task_key → human label + date ──────
   const activityLog = useMemo(() => {
     return completions.map(c => {
       const k = c.task_key;
       let label = "", type = "other", week = null;
-
       WEEKS.forEach(w => {
-        w.runs.forEach((r, i) => {
-          if (runKey(w.week, i) === k) {
-            label = `${r.label} (${r.distance})`;
-            type  = "run"; week = w.week;
-          }
-        });
-        w.skills.forEach(s => {
-          if (skillKey(w.week, s.id) === k) {
-            label = s.label.replace(/^[^\w]+/, "").split(":")[0].trim();
-            type  = "skill"; week = w.week;
-          }
-        });
-        (w.speed||[]).forEach(s => {
-          if (speedKey(w.week, s.id) === k) {
-            label = s.label.replace(/^[^\w]+/, "").split(":")[0].trim();
-            type  = "speed"; week = w.week;
-          }
-        });
-        if (squadKey(w.week) === k) {
-          label = `Squad Session`; type = "squad"; week = w.week;
-        }
+        w.runs.forEach((r, i) => { if (runKey(w.week, i) === k) { label = `${r.label} (${r.distance})`; type = "run"; week = w.week; } });
+        w.skills.forEach(s => { if (skillKey(w.week, s.id) === k) { label = s.label.replace(/^[^\w]+/, "").split(":")[0].trim(); type = "skill"; week = w.week; } });
+        (w.speed||[]).forEach(s => { if (speedKey(w.week, s.id) === k) { label = s.label.replace(/^[^\w]+/, "").split(":")[0].trim(); type = "speed"; week = w.week; } });
+        if (squadKey(w.week) === k) { label = "Squad Session"; type = "squad"; week = w.week; }
       });
-
-      const date = c.completed_at
-        ? new Date(c.completed_at).toLocaleDateString("en-IE", { day:"numeric", month:"short", year:"numeric" })
-        : null;
-
+      const date = c.completed_at ? new Date(c.completed_at).toLocaleDateString("en-IE", { day:"numeric", month:"short", year:"numeric" }) : null;
       return { label, type, week, date, key: k };
-    }).filter(a => a.label); // skip any unrecognised keys
+    }).filter(a => a.label);
   }, [completions]);
 
-  // ── Colour + icon per type ─────────────────────────────────
   const typeStyle = {
     run:   { color:"var(--g)",  bg:"var(--g3)",  icon:"🏃" },
     skill: { color:"#2e7d32",   bg:"#e8f5e9",    icon:"🏑" },
@@ -1072,53 +1150,35 @@ function ProgressTab({ player, checks, isAdmin }) {
 
   return (
     <div className="home-wrap">
-
-      {/* ── Player banner ── */}
-      <div style={{background:"linear-gradient(135deg,var(--g),#4a0a0e)",borderRadius:"var(--radius)",
-                   padding:"16px 18px",marginBottom:14,color:"#fff",position:"relative",overflow:"hidden"}}>
+      <div style={{background:"linear-gradient(135deg,var(--g),#4a0a0e)",borderRadius:"var(--radius)",padding:"16px 18px",marginBottom:14,color:"#fff",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",right:-8,bottom:-10,fontSize:70,opacity:0.07}}>🏃</div>
         <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:26,color:"var(--gold)",letterSpacing:"0.02em"}}>
           {player.name.split(" ")[0]}'s Progress
         </div>
-        <div style={{fontSize:11,opacity:0.65,marginTop:2}}>Fingallians 2015 · Summer Challenge 2026</div>
+        <div style={{fontSize:11,opacity:0.65,marginTop:2}}>Fingallians Girls · Summer Challenge 2026</div>
         {isAdmin && (
-          <div style={{fontSize:10,marginTop:4,background:"rgba(255,255,255,.12)",
-                       display:"inline-block",padding:"2px 8px",borderRadius:10,
-                       color:"rgba(255,255,255,.75)"}}>
+          <div style={{fontSize:10,marginTop:4,background:"rgba(255,255,255,.12)",display:"inline-block",padding:"2px 8px",borderRadius:10,color:"rgba(255,255,255,.75)"}}>
             👁 Viewing as admin
           </div>
         )}
       </div>
 
-      {/* ── 3 stat boxes ── */}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:16,width:"100%"}}>
         {[
-          { label:"Sessions\nLogged",    value: stats.sessions, suffix:"",     color:"var(--g)",  icon:"✅" },
-          { label:"Minutes\nActive",     value: stats.minutes,  suffix:" min", color:"#2e7d32",   icon:"⏱" },
-          { label:"Total\nPoints",       value: stats.pts,      suffix:" pts", color:"#b8860b",   icon:"⭐" },
+          { label:"Sessions\nLogged", value: stats.sessions, suffix:"",     color:"var(--g)",  icon:"✅" },
+          { label:"Minutes\nActive",  value: stats.minutes,  suffix:" min", color:"#2e7d32",   icon:"⏱" },
+          { label:"Total\nPoints",    value: stats.pts,      suffix:" pts", color:"#b8860b",   icon:"⭐" },
         ].map(s => (
-          <div key={s.label} style={{background:"white",borderRadius:12,padding:"12px 8px",
-                                     textAlign:"center",border:"1px solid #f0dede"}}>
+          <div key={s.label} style={{background:"white",borderRadius:12,padding:"12px 8px",textAlign:"center",border:"1px solid #f0dede"}}>
             <div style={{fontSize:20}}>{s.icon}</div>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:28,
-                         color:s.color,lineHeight:1,marginTop:4}}>
-              {s.value}{s.suffix}
-            </div>
-            <div style={{fontSize:10,color:"var(--muted)",marginTop:3,
-                         whiteSpace:"pre-line",lineHeight:1.3}}>
-              {s.label}
-            </div>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:28,color:s.color,lineHeight:1,marginTop:4}}>{s.value}{s.suffix}</div>
+            <div style={{fontSize:10,color:"var(--muted)",marginTop:3,whiteSpace:"pre-line",lineHeight:1.3}}>{s.label}</div>
           </div>
         ))}
       </div>
 
-      {/* ── Weekly activity bar chart ── */}
-      <div style={{background:"white",borderRadius:14,padding:"14px",marginBottom:14,
-                   border:"1px solid #f0dede",width:"100%"}}>
-        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",
-                     letterSpacing:"0.04em",marginBottom:12}}>WEEKLY ACTIVITY</div>
-
-        {/* Legend */}
+      <div style={{background:"white",borderRadius:14,padding:"14px",marginBottom:14,border:"1px solid #f0dede",width:"100%"}}>
+        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",letterSpacing:"0.04em",marginBottom:12}}>WEEKLY ACTIVITY</div>
         <div style={{display:"flex",gap:12,marginBottom:10,flexWrap:"wrap"}}>
           {[["var(--g)","Runs"],["#2e7d32","Skills"],["#7b1fa2","Speed"],["#c45e00","Squad"]].map(([c,l]) => (
             <div key={l} style={{display:"flex",alignItems:"center",gap:4}}>
@@ -1127,130 +1187,67 @@ function ProgressTab({ player, checks, isAdmin }) {
             </div>
           ))}
         </div>
-
-        {/* Bars */}
         <div style={{display:"flex",gap:4,alignItems:"flex-end",height:80}}>
           {weeklyData.map(w => {
-            const barH    = Math.max((w.total / maxWeekActivity) * 72, w.total > 0 ? 4 : 0);
-            const runH    = (w.runs   / w.total || 0) * barH;
-            const skillH  = (w.skills / w.total || 0) * barH;
-            const speedH  = (w.speed  / w.total || 0) * barH;
-            const squadH  = (w.squad  / w.total || 0) * barH;
+            const barH  = Math.max((w.total / maxWeekActivity) * 72, w.total > 0 ? 4 : 0);
+            const runH  = (w.runs   / w.total || 0) * barH;
+            const skillH= (w.skills / w.total || 0) * barH;
+            const speedH= (w.speed  / w.total || 0) * barH;
+            const squadH= (w.squad  / w.total || 0) * barH;
             const allDone = w.total === w.maxPoss;
             return (
               <div key={w.week} style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",gap:2}}>
-                {/* Stacked bar */}
-                <div style={{width:"100%",display:"flex",flexDirection:"column",
-                             justifyContent:"flex-end",height:72,gap:1}}>
-                  {w.squad > 0 && (
-                    <div style={{width:"100%",height:Math.max(squadH,2),background:"#c45e00",
-                                 borderRadius:"2px 2px 0 0",minHeight:3}}/>
-                  )}
-                  {w.speed > 0 && (
-                    <div style={{width:"100%",height:Math.max(speedH,2),background:"#7b1fa2",minHeight:3}}/>
-                  )}
-                  {w.skills > 0 && (
-                    <div style={{width:"100%",height:Math.max(skillH,2),background:"#2e7d32",minHeight:3}}/>
-                  )}
-                  {w.runs > 0 && (
-                    <div style={{width:"100%",height:Math.max(runH,2),background:"var(--g)",
-                                 borderRadius: w.skills === 0 && w.squad === 0 ? "2px 2px 0 0" : 0,
-                                 minHeight:3}}/>
-                  )}
-                  {w.total === 0 && (
-                    <div style={{width:"100%",height:3,background:"#f0dede",borderRadius:2}}/>
-                  )}
+                <div style={{width:"100%",display:"flex",flexDirection:"column",justifyContent:"flex-end",height:72,gap:1}}>
+                  {w.squad > 0 && <div style={{width:"100%",height:Math.max(squadH,2),background:"#c45e00",borderRadius:"2px 2px 0 0",minHeight:3}}/>}
+                  {w.speed > 0 && <div style={{width:"100%",height:Math.max(speedH,2),background:"#7b1fa2",minHeight:3}}/>}
+                  {w.skills > 0 && <div style={{width:"100%",height:Math.max(skillH,2),background:"#2e7d32",minHeight:3}}/>}
+                  {w.runs > 0 && <div style={{width:"100%",height:Math.max(runH,2),background:"var(--g)",borderRadius:w.skills===0&&w.squad===0?"2px 2px 0 0":0,minHeight:3}}/>}
+                  {w.total === 0 && <div style={{width:"100%",height:3,background:"#f0dede",borderRadius:2}}/>}
                 </div>
-                {/* Week label */}
-                <div style={{fontSize:9,color: allDone ? "var(--g)" : "var(--muted)",
-                             fontWeight: allDone ? 700 : 400}}>
-                  W{w.week}{allDone ? "✓" : ""}
-                </div>
+                <div style={{fontSize:9,color:allDone?"var(--g)":"var(--muted)",fontWeight:allDone?700:400}}>W{w.week}{allDone?"✓":""}</div>
               </div>
             );
           })}
         </div>
-
-        {/* KM total */}
         {stats.totalKm > 0 && (
-          <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid #f0e8e8",
-                       display:"flex",alignItems:"center",gap:6}}>
+          <div style={{marginTop:10,paddingTop:10,borderTop:"1px solid #f0e8e8",display:"flex",alignItems:"center",gap:6}}>
             <span style={{fontSize:18}}>🏃</span>
             <div>
-              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:20,
-                            color:"var(--g)",fontWeight:700}}>{stats.totalKm.toFixed(1)} km</span>
+              <span style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:20,color:"var(--g)",fontWeight:700}}>{stats.totalKm.toFixed(1)} km</span>
               <span style={{fontSize:11,color:"var(--muted)",marginLeft:6}}>total distance run</span>
             </div>
           </div>
         )}
       </div>
 
-      {/* ── Activity log ── */}
-      <div style={{background:"white",borderRadius:14,padding:"14px",
-                   border:"1px solid #f0dede",width:"100%"}}>
-        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",
-                     letterSpacing:"0.04em",marginBottom:12}}>ACTIVITY LOG</div>
-
-        {loading && (
-          <div style={{textAlign:"center",color:"var(--muted)",padding:"16px 0",fontSize:13}}>Loading…</div>
-        )}
-
-        {!loading && activityLog.length === 0 && (
-          <div style={{textAlign:"center",color:"var(--muted)",padding:"16px 0",fontSize:13}}>
-            No sessions logged yet — get out there! 🏃
-          </div>
-        )}
-
+      <div style={{background:"white",borderRadius:14,padding:"14px",border:"1px solid #f0dede",width:"100%"}}>
+        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",letterSpacing:"0.04em",marginBottom:12}}>ACTIVITY LOG</div>
+        {loading && <div style={{textAlign:"center",color:"var(--muted)",padding:"16px 0",fontSize:13}}>Loading…</div>}
+        {!loading && activityLog.length === 0 && <div style={{textAlign:"center",color:"var(--muted)",padding:"16px 0",fontSize:13}}>No sessions logged yet — get out there! 🏃</div>}
         {!loading && activityLog.map((a, i) => {
           const ts = typeStyle[a.type] || typeStyle.skill;
           return (
-            <div key={i} style={{display:"flex",alignItems:"center",gap:10,
-                                  padding:"9px 0",
-                                  borderBottom: i < activityLog.length-1 ? "1px solid #f8f0f0" : "none"}}>
-              {/* Icon badge */}
-              <div style={{width:32,height:32,borderRadius:"50%",background:ts.bg,
-                           display:"flex",alignItems:"center",justifyContent:"center",
-                           fontSize:16,flexShrink:0}}>
-                {ts.icon}
-              </div>
-              {/* Label + week */}
+            <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 0",borderBottom:i<activityLog.length-1?"1px solid #f8f0f0":"none"}}>
+              <div style={{width:32,height:32,borderRadius:"50%",background:ts.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{ts.icon}</div>
               <div style={{flex:1}}>
-                <div style={{fontSize:13,fontWeight:600,color:"var(--dark)",lineHeight:1.3}}>
-                  {a.label}
-                </div>
-                {a.week && (
-                  <div style={{fontSize:10,color:"var(--muted)",marginTop:1}}>
-                    Week {a.week}
-                  </div>
-                )}
+                <div style={{fontSize:13,fontWeight:600,color:"var(--dark)",lineHeight:1.3}}>{a.label}</div>
+                {a.week && <div style={{fontSize:10,color:"var(--muted)",marginTop:1}}>Week {a.week}</div>}
               </div>
-              {/* Date */}
-              {a.date && (
-                <div style={{fontSize:11,color:"var(--muted)",textAlign:"right",flexShrink:0}}>
-                  {a.date}
-                </div>
-              )}
+              {a.date && <div style={{fontSize:11,color:"var(--muted)",textAlign:"right",flexShrink:0}}>{a.date}</div>}
             </div>
           );
         })}
       </div>
-
-      
     </div>
   );
 }
 
-// ── CoachesTab ────────────────────────────────────────────────────────────────
-function CoachesTab({ allPlayers, coachEmail, showToast }) {
+function CoachesTab({ allPlayers, coachEmail, showToast, squadLabel }) {
   const [sub, setSub] = useState("leaderboard");
-  const subTabs = [
-    { id:"leaderboard", label:"Leaderboard" },
-    { id:"fitness",     label:"Testing"     },
-  ];
+  const subTabs = [{ id:"leaderboard", label:"Leaderboard" }, { id:"fitness", label:"Testing" }];
   return (
-    <div className="admin-wrap">
-      <div style={{display:"flex",borderRadius:10,overflow:"hidden",
-                   border:"2px solid #a31621",marginBottom:16}}>
+    <div>
+      <div style={{display:"flex",borderRadius:10,overflow:"hidden",border:"2px solid #a31621",marginBottom:16}}>
         {subTabs.map(t => (
           <button key={t.id} onClick={() => setSub(t.id)} style={{
             flex:1, padding:"9px 6px", border:"none", cursor:"pointer",
@@ -1262,32 +1259,24 @@ function CoachesTab({ allPlayers, coachEmail, showToast }) {
           }}>{t.label}</button>
         ))}
       </div>
-      {sub === "leaderboard" && <ScoresTab />}
+      {sub === "leaderboard" && <ScoresTab squadLabel={squadLabel} />}
       {sub === "fitness"     && <FitnessTab allPlayers={allPlayers} coachEmail={coachEmail} showToast={showToast} />}
     </div>
   );
 }
 
-// ── ScoresTab (Leaderboard — admin only) ──────────────────────────────────────
-function ScoresTab() {
+function ScoresTab({ squadLabel }) {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
-      const { data: players } = await sb.from("players").select("id,name");
+      const { data: players } = await sb.from("players").select("id,name").eq("squad", SQUAD);
       const { data: comps }   = await sb.from("task_completions").select("player_id,task_key");
       if (!players) return;
       const statsMap = {};
-      comps?.forEach(r => {
-        if (!statsMap[r.player_id]) statsMap[r.player_id] = {};
-        statsMap[r.player_id][r.task_key] = true;
-      });
-      const rows = players.map(p => ({
-        id: p.id,
-        name: p.name,
-        pts: totalPts(statsMap[p.id] || {}),
-      })).sort((a,b) => b.pts - a.pts);
+      comps?.forEach(r => { if (!statsMap[r.player_id]) statsMap[r.player_id] = {}; statsMap[r.player_id][r.task_key] = true; });
+      const rows = players.map(p => ({ id: p.id, name: p.name, pts: totalPts(statsMap[p.id] || {}) })).sort((a,b) => b.pts - a.pts);
       setLeaderboard(rows);
       setLoading(false);
     }
@@ -1302,30 +1291,19 @@ function ScoresTab() {
       <div style={{background:"linear-gradient(135deg,var(--g) 0%,#4a0a0e 100%)",borderRadius:"var(--radius)",padding:"22px 20px",marginBottom:14,color:"white",textAlign:"center",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",right:-10,bottom:-14,fontSize:100,opacity:0.07,pointerEvents:"none"}}>🏆</div>
         <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:36,letterSpacing:"0.02em",color:"var(--gold)"}}>LEADERBOARD</div>
-        <div style={{fontSize:12,opacity:0.75,marginTop:4}}>Fingallians 2015 Girls · Summer Challenge 2026</div>
+        <div style={{fontSize:12,opacity:0.75,marginTop:4}}>Fingallians Girls {squadLabel ? `· ${squadLabel}` : ""} · Summer Challenge 2026</div>
         <div style={{fontSize:11,opacity:0.6,marginTop:4}}>Updates live as sessions are logged</div>
       </div>
-
       {loading ? (
         <div className="loader"><div className="spinner"/>Loading scores…</div>
       ) : leaderboard.length === 0 ? (
         <div className="empty"><div className="icon">🏑</div><p>No scores yet — get logging!</p></div>
       ) : leaderboard.map((p, i) => {
-        const pct   = Math.round((p.pts / maxPossible) * 100);
+        const pct = Math.round((p.pts / maxPossible) * 100);
         return (
-          <div key={p.id} style={{
-            display:"flex",alignItems:"center",gap:12,
-            background:"white",
-            border:"2px solid transparent",
-            borderRadius:14,padding:"12px 14px",marginBottom:8,
-            boxShadow:"0 2px 10px rgba(163,22,33,0.08)"
-          }}>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:22,width:32,textAlign:"center",flexShrink:0}}>
-              {rankEmoji(i)}
-            </div>
-            <div style={{width:36,height:36,borderRadius:"50%",background:"var(--g)",color:"var(--gold)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Barlow Condensed',sans-serif",fontSize:18,flexShrink:0}}>
-              {p.name[0]}
-            </div>
+          <div key={p.id} style={{display:"flex",alignItems:"center",gap:12,background:"white",border:"2px solid transparent",borderRadius:14,padding:"12px 14px",marginBottom:8,boxShadow:"0 2px 10px rgba(163,22,33,0.08)"}}>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:22,width:32,textAlign:"center",flexShrink:0}}>{rankEmoji(i)}</div>
+            <div style={{width:36,height:36,borderRadius:"50%",background:"var(--g)",color:"var(--gold)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Barlow Condensed',sans-serif",fontSize:18,flexShrink:0}}>{p.name[0]}</div>
             <div style={{flex:1}}>
               <div style={{fontWeight:700,fontSize:15}}>{p.name}</div>
               <div style={{height:4,background:"#f0dede",borderRadius:2,marginTop:5,overflow:"hidden"}}>
@@ -1338,24 +1316,16 @@ function ScoresTab() {
           </div>
         );
       })}
-
-      
     </div>
   );
 }
 
-// ══════════════════════════════════════════════════════════════════════════════
-// ADMIN TAB
-// ══════════════════════════════════════════════════════════════════════════════
-// ─── Fitness Testing Component ────────────────────────────────────────────────
-// ── Helpers shared across fitness components ──────────────────────────────────
 function fmtTime(s) {
   if (!s && s !== 0) return "—";
   const m = Math.floor(s / 60), sec = s % 60;
   return `${m}:${String(sec).padStart(2,"0")}`;
 }
 function parseTime(val) {
-  // Accept m:ss, mm:ss, or raw seconds
   const v = val.trim();
   if (!v) return null;
   if (v.includes(":")) {
@@ -1369,9 +1339,6 @@ function parseTime(val) {
   return n > 0 ? n : null;
 }
 
-// ── FitnessTab ────────────────────────────────────────────────────────────────
-// Unified view: one card per player with times + accordion for football/hurling notes.
-// Two sub-views: "entry" (type times for whole squad) and "results" (ranked table).
 function FitnessTab({ allPlayers, coachEmail, showToast }) {
   const [period,   setPeriod]   = useState("pre");
   const [testDate, setTestDate] = useState(new Date().toISOString().slice(0,10));
@@ -1383,10 +1350,9 @@ function FitnessTab({ allPlayers, coachEmail, showToast }) {
   const [loading,  setLoading]  = useState(true);
   const [search,   setSearch]   = useState("");
   const [ptsMap,   setPtsMap]   = useState({});
-  const lapDebounce = useRef({});    // debounce timers per player
-  const entriesRef  = useRef({});    // always-current entries for use inside timeouts
+  const lapDebounce = useRef({});
+  const entriesRef  = useRef({});
 
-  // Load fitness + coach notes together
   useEffect(() => {
     if (!allPlayers.length) return;
     setLoading(true);
@@ -1396,89 +1362,48 @@ function FitnessTab({ allPlayers, coachEmail, showToast }) {
       sb.from("coach_notes").select("*").in("player_id", ids),
       sb.from("task_completions").select("player_id,task_key").in("player_id", ids),
     ]).then(([{ data: ft }, { data: cn }, { data: comps }]) => {
-      // Seed entries
       const eMap = {};
       allPlayers.forEach(p => { eMap[p.id] = { lap: "", notes: "" }; });
-      ft?.forEach(r => {
-        eMap[r.player_id] = {
-          lap:   r.lap_time ? fmtTime(r.lap_time) : "",
-          notes: r.notes || "",
-        };
-      });
+      ft?.forEach(r => { eMap[r.player_id] = { lap: r.lap_time ? fmtTime(r.lap_time) : "", notes: r.notes || "" }; });
       setEntries(eMap);
       entriesRef.current = eMap;
 
-      // Seed coach notes
       const cMap = {};
-      allPlayers.forEach(p => {
-        cMap[p.id] = {
-          football: { myNote: "", saved: [] },
-          camogie:  { myNote: "", saved: [] },
-        };
-      });
+      allPlayers.forEach(p => { cMap[p.id] = { football: { myNote: "", saved: [] }, camogie: { myNote: "", saved: [] } }; });
       cn?.forEach(r => {
         if (!cMap[r.player_id]) return;
-        const sport = r.sport;
-        cMap[r.player_id][sport].saved.push(r);
-        if (r.coach_email === coachEmail) cMap[r.player_id][sport].myNote = r.note || "";
+        cMap[r.player_id][r.sport]?.saved.push(r);
+        if (r.coach_email === coachEmail) cMap[r.player_id][r.sport].myNote = r.note || "";
       });
       setCnotes(cMap);
 
-      // Calculate pts per player from task_completions
       const statsMap = {};
-      comps?.forEach(r => {
-        if (!statsMap[r.player_id]) statsMap[r.player_id] = {};
-        statsMap[r.player_id][r.task_key] = true;
-      });
+      comps?.forEach(r => { if (!statsMap[r.player_id]) statsMap[r.player_id] = {}; statsMap[r.player_id][r.task_key] = true; });
       const pm = {};
       ids.forEach(id => { pm[id] = totalPts(statsMap[id] || {}); });
       setPtsMap(pm);
-
       setLoading(false);
     });
   }, [period, allPlayers, coachEmail]);
 
   function setField(pid, field, val) {
-    setEntries(e => {
-      const next = { ...e, [pid]: { ...e[pid], [field]: val } };
-      entriesRef.current = next;
-      return next;
-    });
+    setEntries(e => { const next = { ...e, [pid]: { ...e[pid], [field]: val } }; entriesRef.current = next; return next; });
   }
   function setCnoteField(pid, sport, val) {
     setCnotes(c => ({ ...c, [pid]: { ...c[pid], [sport]: { ...c[pid][sport], myNote: val } } }));
   }
-  function toggleAccordion(pid, sport) {
-    const key = pid + sport;
-    setOpen(o => ({ ...o, [key]: !o[key] }));
-  }
 
-  // Save notes for one player (lap time auto-saves on blur)
   async function savePlayer(pid) {
     setSaving(s => ({ ...s, [pid]: true }));
     const e  = entries[pid] || {};
     const cn = cnotes[pid]  || { football:{ myNote:"", saved:[] }, camogie:{ myNote:"", saved:[] } };
     let errs = 0;
-
-    // Always upsert fitness row with both lap_time AND notes so neither clobbers the other
-    const { error: ftErr } = await sb.from("fitness_tests").upsert({
-      player_id: pid, period, test_date: testDate,
-      lap_time:  parseTime(e.lap) || null,
-      notes:     e.notes?.trim() || null,
-      updated_at: new Date().toISOString(),
-    }, { onConflict:"player_id,period" });
+    const { error: ftErr } = await sb.from("fitness_tests").upsert({ player_id: pid, period, test_date: testDate, lap_time: parseTime(e.lap) || null, notes: e.notes?.trim() || null, updated_at: new Date().toISOString() }, { onConflict:"player_id,period" });
     if (ftErr) errs++;
-
-    // Coach notes — always upsert both sports
     for (const sport of ["football","camogie"]) {
       const note = (cn[sport]?.myNote ?? "").trim();
-      const payload = {
-        player_id: pid, sport, coach_email: coachEmail,
-        session_date: testDate, note: note || null,
-        updated_at: new Date().toISOString(),
-      };
-      const { error } = await sb.from("coach_notes")
-        .upsert(payload, { onConflict:"player_id,sport,coach_email" });
+      const payload = { player_id: pid, sport, coach_email: coachEmail, session_date: testDate, note: note || null, updated_at: new Date().toISOString() };
+      const { error } = await sb.from("coach_notes").upsert(payload, { onConflict:"player_id,sport,coach_email" });
       if (error) errs++;
       else {
         setCnotes(c => {
@@ -1488,86 +1413,50 @@ function FitnessTab({ allPlayers, coachEmail, showToast }) {
         });
       }
     }
-
     setSaving(s => ({ ...s, [pid]: false }));
-    if (!errs) {
-      showToast("✅ Saved!");
-      const pObj = allPlayers.find(p => p.id === pid);
-      logAudit(coachEmail, pObj || { id: pid, name: "Unknown" }, "note_saved",
-        `Coach notes saved – ${pObj?.name || pid}`, null, period);
-    } else {
-      showToast("⚠️ Some changes failed to save");
-    }
+    if (!errs) { showToast("✅ Saved!"); const pObj = allPlayers.find(p => p.id === pid); logAudit(coachEmail, pObj || { id: pid, name: "Unknown" }, "note_saved", `Coach notes saved – ${pObj?.name || pid}`, null, period); }
+    else showToast("⚠️ Some changes failed to save");
   }
 
-  const coachName = email => ({"e.t.archbold@gmail.com":"Elaine","mwyse86@gmail.com":"Coach M"}[email] || email.split("@")[0]);
+  const coachName  = email => ({"e.t.archbold@gmail.com":"Elaine","mwyse86@gmail.com":"Coach M"}[email] || email.split("@")[0]);
   const coachColor = email => ({"e.t.archbold@gmail.com":"#1565c0","mwyse86@gmail.com":"#2e7d32"}[email] || "#666");
   const filledCount = Object.values(entries).filter(e => parseTime(e.lap)).length;
 
   return (
     <div>
-      {/* Period + date controls */}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
-        <div>
-          <label className="lbl">Test Period</label>
+        <div><label className="lbl">Test Period</label>
           <select className="inp" value={period} onChange={e => setPeriod(e.target.value)}>
             <option value="pre">🌱 Pre-Summer (Jun)</option>
             <option value="post">🏆 Post-Summer (Aug)</option>
           </select>
         </div>
-        <div>
-          <label className="lbl">Session Date</label>
+        <div><label className="lbl">Session Date</label>
           <input className="inp" type="date" value={testDate} onChange={e => setTestDate(e.target.value)} />
         </div>
       </div>
-
-      {/* View toggle */}
       <div style={{display:"flex",borderRadius:10,overflow:"hidden",border:"2px solid #a31621",marginBottom:16,width:"100%"}}>
         {[["entry","Enter Times"],["results","Results Table"]].map(([v,label]) => (
-          <button key={v} onClick={() => setView(v)} style={{
-            flex:1, padding:"10px 8px", border:"none", cursor:"pointer",
-            fontFamily:"inherit", fontSize:13, fontWeight:700,
-            background: view===v ? "#a31621" : "#fff",
-            color:      view===v ? "#fff"    : "#a31621",
-            opacity:    view===v ? 1         : 0.45,
-            transition:"all 0.15s",
-          }}>{label}</button>
+          <button key={v} onClick={() => setView(v)} style={{ flex:1, padding:"10px 8px", border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:13, fontWeight:700, background: view===v ? "#a31621" : "#fff", color: view===v ? "#fff" : "#a31621", opacity: view===v ? 1 : 0.45, transition:"all 0.15s" }}>{label}</button>
         ))}
       </div>
-
       {loading && <div style={{textAlign:"center",color:"var(--muted)",padding:"20px 0",fontSize:13}}>Loading…</div>}
-
-      {/* ── ENTRY VIEW ── */}
       {!loading && view === "entry" && (
         <>
-          <div style={{fontSize:11,color:"var(--muted)",marginBottom:10,lineHeight:1.6}}>
-            Lap times save automatically when you move to the next field. Open Notes to add coaching notes and hit Save.
-          </div>
-
-          {/* Search bar */}
-          <input className="inp" placeholder="🔍  Search player…" value={search}
-            onChange={e => setSearch(e.target.value)}
-            style={{marginBottom:12,fontSize:13,padding:"8px 12px"}} />
-
+          <div style={{fontSize:11,color:"var(--muted)",marginBottom:10,lineHeight:1.6}}>Lap times save automatically. Open Notes to add coaching observations and hit Save.</div>
+          <input className="inp" placeholder="🔍  Search player…" value={search} onChange={e => setSearch(e.target.value)} style={{marginBottom:12,fontSize:13,padding:"8px 12px"}} />
           {allPlayers.filter(p => p.name.toLowerCase().includes(search.toLowerCase())).map((p) => {
-            const e   = entries[p.id] || { lap:"", notes:"" };
-            const cn  = cnotes[p.id]  || { football:{ myNote:"", saved:[] }, camogie:{ myNote:"", saved:[] } };
+            const e  = entries[p.id] || { lap:"", notes:"" };
+            const cn = cnotes[p.id]  || { football:{ myNote:"", saved:[] }, camogie:{ myNote:"", saved:[] } };
             const lapValid  = e.lap ? parseTime(e.lap) !== null : true;
             const notesOpen = !!open[p.id];
             const hasNotes  = cn.football.saved.filter(s=>s.note).length + (cn.camogie?.saved||[]).filter(s=>s.note).length;
-
             return (
               <div key={p.id} style={{background:"#fff",border:"1px solid #e0e0e0",borderRadius:12,marginBottom:8,overflow:"hidden"}}>
-
-                {/* Name + lap time */}
                 <div style={{display:"grid",gridTemplateColumns:"1fr 90px",gap:8,padding:"10px 12px",alignItems:"center"}}>
                   <div style={{fontWeight:700,fontSize:13,color:"var(--dark)",display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
                     {p.name}
-                    <span style={{background:"#fff4cc",color:"#7a5c00",fontSize:11,
-                                  fontWeight:900,padding:"1px 7px",borderRadius:10,
-                                  border:"1px solid #d4a017",flexShrink:0}}>
-                      {ptsMap[p.id] || 0} pts
-                    </span>
+                    <span style={{background:"#fff4cc",color:"#7a5c00",fontSize:11,fontWeight:900,padding:"1px 7px",borderRadius:10,border:"1px solid #d4a017",flexShrink:0}}>{ptsMap[p.id] || 0} pts</span>
                   </div>
                   <div>
                     <div style={{fontSize:9,fontWeight:700,color:"var(--muted)",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:3,textAlign:"center"}}>Lap Time</div>
@@ -1578,90 +1467,46 @@ function FitnessTab({ allPlayers, coachEmail, showToast }) {
                         clearTimeout(lapDebounce.current[p.id]);
                         lapDebounce.current[p.id] = setTimeout(async () => {
                           const secs = parseTime(val);
-                          if (!secs && val.trim() !== "") return; // partial — wait
+                          if (!secs && val.trim() !== "") return;
                           const cur = entriesRef.current[p.id] || {};
                           let error;
                           if (secs) {
-                            // Valid time — upsert full row
-                            ({ error } = await sb.from("fitness_tests").upsert({
-                              player_id: p.id, period, test_date: testDate,
-                              lap_time: secs,
-                              notes: cur.notes?.trim() || null,
-                              updated_at: new Date().toISOString(),
-                            }, { onConflict:"player_id,period" }));
+                            ({ error } = await sb.from("fitness_tests").upsert({ player_id: p.id, period, test_date: testDate, lap_time: secs, notes: cur.notes?.trim() || null, updated_at: new Date().toISOString() }, { onConflict:"player_id,period" }));
                           } else {
-                            // Cleared — update existing row only (ignore if no row yet)
-                            ({ error } = await sb.from("fitness_tests")
-                              .update({ lap_time: null, updated_at: new Date().toISOString() })
-                              .eq("player_id", p.id)
-                              .eq("period", period));
-                            // error is fine if row doesn't exist — nothing to clear
+                            ({ error } = await sb.from("fitness_tests").update({ lap_time: null, updated_at: new Date().toISOString() }).eq("player_id", p.id).eq("period", period));
                             error = null;
                           }
-                          if (!error) {
-                            showToast(secs
-                              ? `✅ ${p.name.split(" ")[0]} lap saved`
-                              : `✅ ${p.name.split(" ")[0]} lap cleared`);
-                            logAudit(coachEmail, p, secs ? "lap_saved" : "lap_cleared",
-                              `${period === "pre" ? "Pre" : "Post"}-summer lap – ${p.name}`,
-                              null, secs ? `${Math.floor(secs/60)}:${String(secs%60).padStart(2,"0")}` : "cleared");
-                          } else showToast("⚠️ Lap save failed");
+                          if (!error) { showToast(secs ? `✅ ${p.name.split(" ")[0]} lap saved` : `✅ ${p.name.split(" ")[0]} lap cleared`); logAudit(coachEmail, p, secs ? "lap_saved" : "lap_cleared", `${period === "pre" ? "Pre" : "Post"}-summer lap – ${p.name}`, null, secs ? `${Math.floor(secs/60)}:${String(secs%60).padStart(2,"0")}` : "cleared"); }
+                          else showToast("⚠️ Lap save failed");
                         }, 800);
                       }}
-                      style={{textAlign:"center",padding:"5px 4px",fontSize:13,fontWeight:700,
-                              borderColor:!lapValid?"#e53935":undefined,
-                              color:parseTime(e.lap)?"#2e7d32":"inherit"}} />
+                      style={{textAlign:"center",padding:"5px 4px",fontSize:13,fontWeight:700,borderColor:!lapValid?"#e53935":undefined,color:parseTime(e.lap)?"#2e7d32":"inherit"}} />
                   </div>
                 </div>
-
-                {/* Notes toggle */}
                 <div style={{borderTop:"1px solid #f0f0f0"}}>
                   <button onClick={() => setOpen(o => ({...o, [p.id]: !o[p.id]}))}
-                    style={{width:"100%",padding:"8px 12px",border:"none",background:notesOpen?"#f0f4ff":"transparent",
-                            cursor:"pointer",display:"flex",alignItems:"center",gap:6,
-                            fontSize:12,fontWeight:700,color:"#333",fontFamily:"inherit"}}>
+                    style={{width:"100%",padding:"8px 12px",border:"none",background:notesOpen?"#f0f4ff":"transparent",cursor:"pointer",display:"flex",alignItems:"center",gap:6,fontSize:12,fontWeight:700,color:"#333",fontFamily:"inherit"}}>
                     <span>📝 Notes</span>
-                    {hasNotes > 0 && (
-                      <span style={{background:"var(--primary)",color:"#fff",fontSize:10,fontWeight:900,
-                                    padding:"1px 7px",borderRadius:10}}>{hasNotes}</span>
-                    )}
+                    {hasNotes > 0 && <span style={{background:"var(--primary)",color:"#fff",fontSize:10,fontWeight:900,padding:"1px 7px",borderRadius:10}}>{hasNotes}</span>}
                     <span style={{marginLeft:"auto",fontSize:11,color:"#999"}}>{notesOpen?"▲":"▼"}</span>
                   </button>
                 </div>
-
-                {/* Notes body */}
                 {notesOpen && (
                   <div style={{padding:"12px",background:"#fafafa",borderTop:"1px solid #f0f0f0",display:"flex",flexDirection:"column",gap:12}}>
-
                     <div>
                       <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",color:"var(--muted)",marginBottom:4}}>🏃 Fitness Notes</div>
-                      <input className="inp" placeholder="e.g. Strong effort, needs to pace better…"
-                        value={e.notes}
-                        onChange={ev => setField(p.id,"notes",ev.target.value)}
-                        style={{fontSize:12,padding:"6px 8px",width:"100%"}} />
+                      <input className="inp" placeholder="e.g. Strong effort, good pace…" value={e.notes} onChange={ev => setField(p.id,"notes",ev.target.value)} style={{fontSize:12,padding:"6px 8px",width:"100%"}} />
                     </div>
-
                     <div>
                       <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",color:"var(--muted)",marginBottom:4}}>⚽ Football Notes</div>
-                      <NoteAccordionBody sport="football" cn={cn.football}
-                        coachEmail={coachEmail} coachName={coachName} coachColor={coachColor}
-                        onChange={val => setCnoteField(p.id,"football",val)} />
+                      <NoteAccordionBody sport="football" cn={cn.football} coachEmail={coachEmail} coachName={coachName} coachColor={coachColor} onChange={val => setCnoteField(p.id,"football",val)} />
                     </div>
-
                     <div>
                       <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",color:"var(--muted)",marginBottom:4}}>🏑 Camogie Notes</div>
-                      <NoteAccordionBody sport="camogie" cn={cn.camogie || { myNote: "", saved: [] }}
-                        coachEmail={coachEmail} coachName={coachName} coachColor={coachColor}
-                        onChange={val => setCnoteField(p.id,"camogie",val)} />
+                      <NoteAccordionBody sport="camogie" cn={cn.camogie || { myNote: "", saved: [] }} coachEmail={coachEmail} coachName={coachName} coachColor={coachColor} onChange={val => setCnoteField(p.id,"camogie",val)} />
                     </div>
-
-                    {/* Save button inside accordion */}
                     <button onClick={() => savePlayer(p.id)} disabled={!!saving[p.id]}
-                      style={{padding:"11px",borderRadius:8,border:"none",
-                              background:saving[p.id]?"#ccc":"#a31621",
-                              color:"#fff",fontWeight:700,fontSize:14,
-                              cursor:saving[p.id]?"not-allowed":"pointer",
-                              fontFamily:"inherit",width:"100%",letterSpacing:"0.04em"}}>
+                      style={{padding:"11px",borderRadius:8,border:"none",background:saving[p.id]?"#ccc":"#a31621",color:"#fff",fontWeight:700,fontSize:14,cursor:saving[p.id]?"not-allowed":"pointer",fontFamily:"inherit",width:"100%",letterSpacing:"0.04em"}}>
                       {saving[p.id] ? "Saving…" : "Save"}
                     </button>
                   </div>
@@ -1669,23 +1514,14 @@ function FitnessTab({ allPlayers, coachEmail, showToast }) {
               </div>
             );
           })}
-
-          <div style={{fontSize:12,color:"var(--muted)",textAlign:"center",marginTop:8}}>
-            {filledCount} of {allPlayers.length} players timed
-          </div>
+          <div style={{fontSize:12,color:"var(--muted)",textAlign:"center",marginTop:8}}>{filledCount} of {allPlayers.length} players timed</div>
         </>
       )}
-
-      {/* ── RESULTS VIEW ── */}
-      {!loading && view === "results" && (
-        <ResultsTable allPlayers={allPlayers} period={period} ptsMap={ptsMap} />
-      )}
+      {!loading && view === "results" && <ResultsTable allPlayers={allPlayers} period={period} ptsMap={ptsMap} />}
     </div>
   );
 }
 
-// ── NoteAccordionBody ─────────────────────────────────────────────────────────
-// Renders inside an open accordion: other coaches' saved notes + my editable note.
 function NoteAccordionBody({ sport, cn, coachEmail, coachName, coachColor, onChange }) {
   const otherNotes = cn.saved.filter(s => s.coach_email !== coachEmail && s.note);
   return (
@@ -1693,45 +1529,27 @@ function NoteAccordionBody({ sport, cn, coachEmail, coachName, coachColor, onCha
       {otherNotes.length > 0 && (
         <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:10}}>
           {otherNotes.map(s => (
-            <div key={s.coach_email} style={{
-              background:"#fff",borderRadius:6,padding:"6px 10px",
-              fontSize:12,lineHeight:1.5,
-              borderLeft:`3px solid ${coachColor(s.coach_email)}`
-            }}>
-              <span style={{fontWeight:700,fontSize:11,textTransform:"uppercase",
-                            letterSpacing:"0.05em",color:coachColor(s.coach_email)}}>
-                {coachName(s.coach_email)}:&nbsp;
-              </span>
+            <div key={s.coach_email} style={{background:"#fff",borderRadius:6,padding:"6px 10px",fontSize:12,lineHeight:1.5,borderLeft:`3px solid ${coachColor(s.coach_email)}`}}>
+              <span style={{fontWeight:700,fontSize:11,textTransform:"uppercase",letterSpacing:"0.05em",color:coachColor(s.coach_email)}}>{coachName(s.coach_email)}:&nbsp;</span>
               {s.note}
             </div>
           ))}
         </div>
       )}
-      <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",
-                   color:coachColor(coachEmail),marginBottom:4}}>
-        {coachName(coachEmail)} (you)
-      </div>
-      <textarea className="inp"
-        placeholder={`Your ${sport} note…`}
-        value={cn.myNote}
-        onChange={e => onChange(e.target.value)}
-        rows={2}
-        style={{width:"100%",resize:"vertical",fontSize:12,padding:"7px 10px"}}
-      />
+      <div style={{fontSize:10,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",color:coachColor(coachEmail),marginBottom:4}}>{coachName(coachEmail)} (you)</div>
+      <textarea className="inp" placeholder={`Your ${sport} note…`} value={cn.myNote} onChange={e => onChange(e.target.value)} rows={2} style={{width:"100%",resize:"vertical",fontSize:12,padding:"7px 10px"}} />
     </div>
   );
 }
 
-// ── ResultsTable ──────────────────────────────────────────────────────────────
 function ResultsTable({ allPlayers, period, ptsMap = {} }) {
-  const [allTests,    setAllTests]    = useState([]);
-  const [loading,     setLoading]     = useState(true);
-  const [showPeriod,  setShowPeriod]  = useState(period);
+  const [allTests,   setAllTests]   = useState([]);
+  const [loading,    setLoading]    = useState(true);
+  const [showPeriod, setShowPeriod] = useState(period);
 
   useEffect(() => {
     if (!allPlayers.length) return;
-    sb.from("fitness_tests").select("*")
-      .in("player_id", allPlayers.map(p => p.id))
+    sb.from("fitness_tests").select("*").in("player_id", allPlayers.map(p => p.id))
       .then(({ data }) => { setAllTests(data || []); setLoading(false); });
   }, [allPlayers]);
 
@@ -1741,118 +1559,58 @@ function ResultsTable({ allPlayers, period, ptsMap = {} }) {
   allPlayers.forEach(p => { playerMap[p.id] = { id: p.id, name: p.name, pre: null, post: null }; });
   allTests.forEach(t => { if (playerMap[t.player_id]) playerMap[t.player_id][t.period] = t; });
 
-  // Combined rank: lap time rank + inverse pts rank (lower = better)
-  // Players with no lap time go to the bottom
   const base = Object.values(playerMap);
   const maxPts = Math.max(...base.map(r => ptsMap[r.id] || 0), 1);
 
   const rows = base.sort((a, b) => {
     const ta = a[showPeriod]?.lap_time, tb = b[showPeriod]?.lap_time;
     const pa = ptsMap[a.id] || 0, pb = ptsMap[b.id] || 0;
-    // If both have a lap time, combine: normalised lap (lower=better) minus normalised pts (higher=better)
-    if (ta && tb) {
-      const scoreA = (ta / 600) - (pa / maxPts);   // lower is better
-      const scoreB = (tb / 600) - (pb / maxPts);
-      return scoreA - scoreB;
-    }
-    if (!ta && !tb) return pb - pa;  // no times: rank by pts
+    if (ta && tb) { const scoreA = (ta / 600) - (pa / maxPts); const scoreB = (tb / 600) - (pb / maxPts); return scoreA - scoreB; }
+    if (!ta && !tb) return pb - pa;
     if (!ta) return 1;
     if (!tb) return -1;
   });
 
   const hasAnyPost  = rows.some(r => r.post?.lap_time);
   const medalColors = ["#f5c842","#b0b0b0","#cd7f32"];
-  const cols = hasAnyPost
-    ? "28px 1fr 70px 70px 60px 55px"
-    : "28px 1fr 80px 55px";
+  const cols = hasAnyPost ? "28px 1fr 70px 70px 60px 55px" : "28px 1fr 80px 55px";
 
   return (
     <div>
       <div style={{display:"flex",gap:8,marginBottom:14,alignItems:"center"}}>
         <span style={{fontSize:11,color:"#9a7070",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em"}}>Rank by:</span>
         {["pre","post"].map(p => (
-          <button key={p} onClick={() => setShowPeriod(p)} style={{
-            padding:"6px 14px", borderRadius:8, cursor:"pointer",
-            fontFamily:"inherit", fontSize:13, fontWeight:700,
-            background: showPeriod===p ? "#a31621" : "#fff",
-            color:      showPeriod===p ? "#fff"    : "#a31621",
-            border:     "2px solid #a31621",
-            opacity:    showPeriod===p ? 1 : 0.45,
-            transition:"all 0.15s",
-          }}>
+          <button key={p} onClick={() => setShowPeriod(p)} style={{ padding:"6px 14px", borderRadius:8, cursor:"pointer", fontFamily:"inherit", fontSize:13, fontWeight:700, background: showPeriod===p ? "#a31621" : "#fff", color: showPeriod===p ? "#fff" : "#a31621", border: "2px solid #a31621", opacity: showPeriod===p ? 1 : 0.45, transition:"all 0.15s" }}>
             {p === "pre" ? "🌱 Pre" : "🏆 Post"}
           </button>
         ))}
       </div>
-
-      {/* Header */}
-      <div style={{display:"grid", gridTemplateColumns:cols, gap:6,
-                   padding:"7px 10px", background:"#f5f5f5", borderRadius:"8px 8px 0 0",
-                   fontSize:11, fontWeight:700, color:"#5a3a3d",
-                   textTransform:"uppercase", letterSpacing:"0.06em"}}>
-        <div>#</div>
-        <div>Player</div>
-        <div style={{textAlign:"center"}}>Pre Lap</div>
+      <div style={{display:"grid", gridTemplateColumns:cols, gap:6, padding:"7px 10px", background:"#f5f5f5", borderRadius:"8px 8px 0 0", fontSize:11, fontWeight:700, color:"#5a3a3d", textTransform:"uppercase", letterSpacing:"0.06em"}}>
+        <div>#</div><div>Player</div><div style={{textAlign:"center"}}>Pre Lap</div>
         {hasAnyPost && <div style={{textAlign:"center"}}>Post Lap</div>}
         {hasAnyPost && <div style={{textAlign:"center"}}>Diff</div>}
         <div style={{textAlign:"center"}}>Pts</div>
       </div>
-
       {rows.map((r, i) => {
-        const preLap   = r.pre?.lap_time  ?? null;
-        const postLap  = r.post?.lap_time ?? null;
-        const diff     = preLap && postLap ? postLap - preLap : null;
+        const preLap  = r.pre?.lap_time  ?? null;
+        const postLap = r.post?.lap_time ?? null;
+        const diff    = preLap && postLap ? postLap - preLap : null;
         const improved = diff !== null && diff < 0;
         const slower   = diff !== null && diff > 0;
         const pts      = ptsMap[r.id] || 0;
         const preNotes = r.pre?.notes, postNotes = r.post?.notes;
-
         return (
           <div key={r.name}>
-            <div style={{display:"grid", gridTemplateColumns:cols,
-                         gap:6, padding:"9px 10px", alignItems:"center",
-                         background: i%2===0 ? "#fff" : "#fafafa",
-                         borderBottom:"1px solid #f0f0f0"}}>
-              {/* Rank */}
-              <div style={{fontSize:i<3?16:12, textAlign:"center",
-                           color:i<3?medalColors[i]:"#ccc", fontWeight:900}}>
-                {i<3 ? ["🥇","🥈","🥉"][i] : i+1}
-              </div>
-              {/* Name */}
-              <div style={{fontSize:13,fontWeight:700,overflow:"hidden",
-                           textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
-                {r.name}
-              </div>
-              {/* Pre lap */}
-              <div style={{textAlign:"center",fontSize:13,
-                           color:showPeriod==="pre"?"#a31621":"#5a3a3d",
-                           fontWeight:showPeriod==="pre"?700:400}}>
-                {preLap ? fmtTime(preLap) : <span style={{color:"#ddd"}}>—</span>}
-              </div>
-              {/* Post lap */}
-              {hasAnyPost && <div style={{textAlign:"center",fontSize:13,
-                           color:showPeriod==="post"?"#a31621":"#5a3a3d",
-                           fontWeight:showPeriod==="post"?700:400}}>
-                {postLap ? fmtTime(postLap) : <span style={{color:"#ddd"}}>—</span>}
-              </div>}
-              {/* Diff */}
-              {hasAnyPost && <div style={{textAlign:"center",fontSize:12,fontWeight:700,
-                           color:improved?"#2e7d32":slower?"#e53935":"#ccc"}}>
-                {diff===null ? "—" : improved ? `▼${fmtTime(Math.abs(diff))}` : slower ? `▲${fmtTime(diff)}` : "="}
-              </div>}
-              {/* Points */}
-              <div style={{textAlign:"center"}}>
-                <span style={{background:"#fff4cc",color:"#1a0a0b",fontSize:12,
-                              fontWeight:900,padding:"2px 8px",borderRadius:10,
-                              border:"1px solid #d4a017"}}>
-                  {pts}
-                </span>
-              </div>
+            <div style={{display:"grid", gridTemplateColumns:cols, gap:6, padding:"9px 10px", alignItems:"center", background: i%2===0 ? "#fff" : "#fafafa", borderBottom:"1px solid #f0f0f0"}}>
+              <div style={{fontSize:i<3?16:12, textAlign:"center", color:i<3?medalColors[i]:"#ccc", fontWeight:900}}>{i<3 ? ["🥇","🥈","🥉"][i] : i+1}</div>
+              <div style={{fontSize:13,fontWeight:700,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{r.name}</div>
+              <div style={{textAlign:"center",fontSize:13,color:showPeriod==="pre"?"#a31621":"#5a3a3d",fontWeight:showPeriod==="pre"?700:400}}>{preLap ? fmtTime(preLap) : <span style={{color:"#ddd"}}>—</span>}</div>
+              {hasAnyPost && <div style={{textAlign:"center",fontSize:13,color:showPeriod==="post"?"#a31621":"#5a3a3d",fontWeight:showPeriod==="post"?700:400}}>{postLap ? fmtTime(postLap) : <span style={{color:"#ddd"}}>—</span>}</div>}
+              {hasAnyPost && <div style={{textAlign:"center",fontSize:12,fontWeight:700,color:improved?"#2e7d32":slower?"#e53935":"#ccc"}}>{diff===null ? "—" : improved ? `▼${fmtTime(Math.abs(diff))}` : slower ? `▲${fmtTime(diff)}` : "="}</div>}
+              <div style={{textAlign:"center"}}><span style={{background:"#fff4cc",color:"#1a0a0b",fontSize:12,fontWeight:900,padding:"2px 8px",borderRadius:10,border:"1px solid #d4a017"}}>{pts}</span></div>
             </div>
-            {/* Notes */}
             {(preNotes||postNotes) && (
-              <div style={{padding:"4px 10px 8px 44px",background:i%2===0?"#fff":"#fafafa",
-                           borderBottom:"1px solid #f0f0f0",display:"flex",gap:16,flexWrap:"wrap"}}>
+              <div style={{padding:"4px 10px 8px 44px",background:i%2===0?"#fff":"#fafafa",borderBottom:"1px solid #f0f0f0",display:"flex",gap:16,flexWrap:"wrap"}}>
                 {preNotes  && <div style={{fontSize:11,color:"#9a7070",fontStyle:"italic",lineHeight:1.5}}><span style={{fontWeight:700,fontStyle:"normal",color:"#e65100"}}>Pre: </span>{preNotes}</div>}
                 {postNotes && <div style={{fontSize:11,color:"#9a7070",fontStyle:"italic",lineHeight:1.5}}><span style={{fontWeight:700,fontStyle:"normal",color:"#2e7d32"}}>Post: </span>{postNotes}</div>}
               </div>
@@ -1860,28 +1618,19 @@ function ResultsTable({ allPlayers, period, ptsMap = {} }) {
           </div>
         );
       })}
-
-      {/* Squad summary */}
       {(() => {
         const timed = rows.filter(r => r[showPeriod]?.lap_time);
         if (!timed.length) return null;
-        const times    = timed.map(r => r[showPeriod].lap_time);
-        const avg      = Math.round(times.reduce((a,b)=>a+b,0)/times.length);
+        const times   = timed.map(r => r[showPeriod].lap_time);
+        const avg     = Math.round(times.reduce((a,b)=>a+b,0)/times.length);
         const improved = rows.filter(r => r.pre?.lap_time && r.post?.lap_time && r.post.lap_time < r.pre.lap_time);
-        const topPts   = Math.max(...rows.map(r => ptsMap[r.id]||0));
+        const topPts  = Math.max(...rows.map(r => ptsMap[r.id]||0));
         return (
           <div style={{display:"flex",gap:10,marginTop:12,flexWrap:"wrap"}}>
-            {[
-              {label:"Squad avg",  val:fmtTime(avg),              color:"#a31621"},
-              {label:"Fastest",    val:fmtTime(Math.min(...times)),color:"#2e7d32"},
-              {label:"Top pts",    val:`${topPts} pts`,            color:"#d4a017"},
-              ...(improved.length ? [{label:"Improved", val:`${improved.length} boys`, color:"#2e7d32"}] : []),
-            ].map(stat => (
-              <div key={stat.label} style={{flex:1,minWidth:80,background:"#f9f9f9",
-                    border:"1px solid #eee",borderRadius:10,padding:"10px 12px",textAlign:"center"}}>
+            {[{label:"Squad avg",val:fmtTime(avg),color:"#a31621"},{label:"Fastest",val:fmtTime(Math.min(...times)),color:"#2e7d32"},{label:"Top pts",val:`${topPts} pts`,color:"#d4a017"},...(improved.length?[{label:"Improved",val:`${improved.length} girls`,color:"#2e7d32"}]:[])].map(stat => (
+              <div key={stat.label} style={{flex:1,minWidth:80,background:"#f9f9f9",border:"1px solid #eee",borderRadius:10,padding:"10px 12px",textAlign:"center"}}>
                 <div style={{fontSize:17,fontWeight:900,color:stat.color}}>{stat.val}</div>
-                <div style={{fontSize:10,color:"#9a7070",textTransform:"uppercase",
-                             letterSpacing:"0.06em",marginTop:2}}>{stat.label}</div>
+                <div style={{fontSize:10,color:"#9a7070",textTransform:"uppercase",letterSpacing:"0.06em",marginTop:2}}>{stat.label}</div>
               </div>
             ))}
           </div>
@@ -1891,32 +1640,24 @@ function ResultsTable({ allPlayers, period, ptsMap = {} }) {
   );
 }
 
-
-
-
-// ── DashboardTab ──────────────────────────────────────────────────────────────
-// Super-admin only. Pulls live data from Supabase.
-function DashboardTab({ allPlayers }) {
-  const [stats,       setStats]       = useState(null);
-  const [loading,     setLoading]     = useState(true);
-  const [recentLog,   setRecentLog]   = useState([]);
-  const [claimedIds,  setClaimedIds]  = useState(new Set());
-  const [ptsMap,      setPtsMap]      = useState({});
-  const [weeklyMap,   setWeeklyMap]   = useState({});  // { pid: { w1:pts, w2:pts, ... } }
-  const [activeView,  setActiveView]  = useState("overview");
+function DashboardTab({ allPlayers, squadLabel }) {
+  const [stats,      setStats]      = useState(null);
+  const [loading,    setLoading]    = useState(true);
+  const [recentLog,  setRecentLog]  = useState([]);
+  const [claimedIds, setClaimedIds] = useState(new Set());
+  const [ptsMap,     setPtsMap]     = useState({});
+  const [weeklyMap,  setWeeklyMap]  = useState({});
+  const [activeView, setActiveView] = useState("overview");
 
   useEffect(() => {
     if (!allPlayers.length) return;
     const ids = allPlayers.map(p => p.id);
-
     Promise.all([
       sb.from("task_completions").select("player_id,task_key,completed_at").in("player_id", ids),
       sb.from("parent_players").select("player_id"),
       sb.from("audit_log").select("user_email,player_name,action,detail,created_at").order("created_at",{ascending:false}).limit(20),
       sb.from("fitness_tests").select("player_id,period,lap_time").in("player_id", ids),
     ]).then(([{data:comps},{data:links},{data:logs},{data:fitness}]) => {
-
-      // Points per player
       const byPlayer = {};
       ids.forEach(id => { byPlayer[id] = {}; });
       comps?.forEach(r => { if(byPlayer[r.player_id]) byPlayer[r.player_id][r.task_key]=true; });
@@ -1924,56 +1665,38 @@ function DashboardTab({ allPlayers }) {
       ids.forEach(id => { pm[id] = totalPts(byPlayer[id]); });
       setPtsMap(pm);
 
-      // Weekly pts breakdown per player
       const wm = {};
-      ids.forEach(id => {
-        wm[id] = {};
-        WEEKS.forEach(w => { wm[id][w.week] = weekPts(w, byPlayer[id]); });
-      });
+      ids.forEach(id => { wm[id] = {}; WEEKS.forEach(w => { wm[id][w.week] = weekPts(w, byPlayer[id]); }); });
       setWeeklyMap(wm);
 
-      // Claimed players
       setClaimedIds(new Set(links?.map(l => l.player_id) || []));
-
-      // Recent audit log
       setRecentLog(logs || []);
 
-      // Summary stats
-      const totalSessions = comps?.length || 0;
-      const playersActive  = new Set(comps?.map(r => r.player_id)).size;
-      const avgPts = ids.length
-        ? Math.round(Object.values(pm).reduce((a,b)=>a+b,0) / ids.length)
-        : 0;
-      const topPlayer = allPlayers.slice().sort((a,b)=>(pm[b.id]||0)-(pm[a.id]||0))[0];
-
-      // This week sessions (last 7 days)
-      const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate()-7);
+      const totalSessions    = comps?.length || 0;
+      const playersActive    = new Set(comps?.map(r => r.player_id)).size;
+      const avgPts           = ids.length ? Math.round(Object.values(pm).reduce((a,b)=>a+b,0) / ids.length) : 0;
+      const weekAgo          = new Date(); weekAgo.setDate(weekAgo.getDate()-7);
       const thisWeekSessions = comps?.filter(r => r.completed_at && new Date(r.completed_at) > weekAgo).length || 0;
+      const preTimes         = fitness?.filter(f=>f.period==="pre"  && f.lap_time).length || 0;
+      const postTimes        = fitness?.filter(f=>f.period==="post" && f.lap_time).length || 0;
 
-      // Pre/post lap times
-      const preTimes  = fitness?.filter(f=>f.period==="pre"  && f.lap_time).length || 0;
-      const postTimes = fitness?.filter(f=>f.period==="post" && f.lap_time).length || 0;
-
-      setStats({ totalSessions, playersActive, avgPts, topPlayer, thisWeekSessions, preTimes, postTimes,
+      setStats({ totalSessions, playersActive, avgPts, thisWeekSessions, preTimes, postTimes,
                  registered: new Set(links?.map(l=>l.player_id)||[]).size, total: ids.length });
       setLoading(false);
     });
   }, [allPlayers]);
 
-  // Current week number
-  const currentWeek = Math.min(Math.max(
-    Math.floor((new Date() - new Date("2026-06-29")) / (7*24*60*60*1000)) + 1, 1), 8);
+  const currentWeek    = Math.min(Math.max(Math.floor((new Date() - new Date("2026-06-29")) / (7*24*60*60*1000)) + 1, 1), 8);
+  const sortedPlayers  = allPlayers.slice().sort((a,b)=>(ptsMap[b.id]||0)-(ptsMap[a.id]||0));
+  const maxPts         = Math.max(...sortedPlayers.map(p=>ptsMap[p.id]||0), 1);
+  const maxPossible    = WEEKS.reduce((a,w)=>a+weekMaxPts(w),0);
 
-  // Sort players by pts desc
-  const sortedPlayers = allPlayers.slice().sort((a,b)=>(ptsMap[b.id]||0)-(ptsMap[a.id]||0));
-
-  // Action icon + colour for audit log
   const actionStyle = {
-    task_complete:   { icon:"✅", color:"#2e7d32", bg:"#e8f5e9"  },
-    task_incomplete: { icon:"↩️", color:"#e65100", bg:"#fff3e0"  },
-    lap_saved:       { icon:"⏱", color:"#1565c0", bg:"#e3f2fd"  },
-    lap_cleared:     { icon:"🗑", color:"#9e9e9e", bg:"#f5f5f5"  },
-    note_saved:      { icon:"📝", color:"#7b1fa2", bg:"#f3e5f5"  },
+    task_complete:   { icon:"✅", color:"#2e7d32", bg:"#e8f5e9" },
+    task_incomplete: { icon:"↩️", color:"#e65100", bg:"#fff3e0" },
+    lap_saved:       { icon:"⏱", color:"#1565c0", bg:"#e3f2fd" },
+    lap_cleared:     { icon:"🗑", color:"#9e9e9e", bg:"#f5f5f5" },
+    note_saved:      { icon:"📝", color:"#7b1fa2", bg:"#f3e5f5" },
   };
 
   const fmtAgo = (ts) => {
@@ -1985,45 +1708,22 @@ function DashboardTab({ allPlayers }) {
     return new Date(ts).toLocaleDateString("en-IE",{day:"numeric",month:"short"});
   };
 
-  // Max pts for bar scaling
-  const maxPts = Math.max(...sortedPlayers.map(p=>ptsMap[p.id]||0), 1);
-  const maxPossible = WEEKS.reduce((a,w)=>a+weekMaxPts(w),0);
-
-  if (loading) return (
-    <div className="admin-wrap">
-      <div className="loader"><div className="spinner"/>Loading dashboard…</div>
-    </div>
-  );
+  if (loading) return <div className="loader"><div className="spinner"/>Loading dashboard…</div>;
 
   return (
-    <div className="admin-wrap">
-
-      {/* ── Header ── */}
-      <div style={{background:"linear-gradient(135deg,var(--g),#4a0a0e)",borderRadius:"var(--radius)",
-                   padding:"16px 18px",marginBottom:14,color:"#fff",position:"relative",overflow:"hidden"}}>
+    <div>
+      <div style={{background:"linear-gradient(135deg,var(--g),#4a0a0e)",borderRadius:"var(--radius)",padding:"16px 18px",marginBottom:14,color:"#fff",position:"relative",overflow:"hidden"}}>
         <div style={{position:"absolute",right:-10,bottom:-14,fontSize:90,opacity:0.06,pointerEvents:"none"}}>📊</div>
-        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:28,color:"var(--gold)",letterSpacing:"0.02em"}}>
-          SQUAD DASHBOARD
-        </div>
-        <div style={{fontSize:12,opacity:0.7,marginTop:2}}>
-          Fingallians 2015 Girls · Week {currentWeek} of 8 · Summer Challenge 2026
-        </div>
-        {/* Sub-nav */}
+        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:28,color:"var(--gold)",letterSpacing:"0.02em"}}>SQUAD DASHBOARD</div>
+        <div style={{fontSize:12,opacity:0.7,marginTop:2}}>Fingallians Girls {squadLabel ? `· ${squadLabel}` : ""} · Week {currentWeek} of 8 · Summer Challenge 2026</div>
         <div style={{display:"flex",gap:6,marginTop:12,flexWrap:"wrap"}}>
           {[["overview","Overview"],["squad","Squad"],["weekly","By Week"],["log","Activity Log"]].map(([v,l])=>(
-            <button key={v} onClick={()=>setActiveView(v)} style={{
-              padding:"5px 12px",borderRadius:16,border:"1px solid rgba(255,255,255,0.3)",
-              background:activeView===v?"rgba(255,255,255,0.2)":"transparent",
-              color:"#fff",fontSize:12,cursor:"pointer",fontFamily:"inherit",fontWeight:activeView===v?700:400,
-            }}>{l}</button>
+            <button key={v} onClick={()=>setActiveView(v)} style={{padding:"5px 12px",borderRadius:16,border:"1px solid rgba(255,255,255,0.3)",background:activeView===v?"rgba(255,255,255,0.2)":"transparent",color:"#fff",fontSize:12,cursor:"pointer",fontFamily:"inherit",fontWeight:activeView===v?700:400}}>{l}</button>
           ))}
         </div>
       </div>
 
-      {/* ── OVERVIEW ── */}
       {activeView === "overview" && <>
-
-        {/* Metric cards */}
         <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginBottom:14}}>
           {[
             { label:"Registered",    value:`${stats.registered}/${stats.total}`, sub:`${stats.total-stats.registered} not signed up`, color:"#2e7d32" },
@@ -2039,48 +1739,31 @@ function DashboardTab({ allPlayers }) {
           ))}
         </div>
 
-        {/* Top 5 leaderboard */}
         <div style={{background:"white",borderRadius:14,padding:"14px",border:"1px solid #f0dede",marginBottom:14}}>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",
-                       letterSpacing:"0.04em",marginBottom:10}}>TOP PLAYERS</div>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",letterSpacing:"0.04em",marginBottom:10}}>TOP PLAYERS</div>
           {sortedPlayers.slice(0,5).map((p,i)=>{
             const pts = ptsMap[p.id]||0;
             const pct = Math.round((pts/maxPts)*100);
-            const medals = ["🥇","🥈","🥉"];
             return (
               <div key={p.id} style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
-                <div style={{width:22,textAlign:"center",fontSize:i<3?18:12,flexShrink:0}}>
-                  {i<3 ? medals[i] : `${i+1}`}
-                </div>
-                <div style={{width:32,height:32,borderRadius:"50%",background:"var(--g)",color:"var(--gold)",
-                             display:"flex",alignItems:"center",justifyContent:"center",
-                             fontFamily:"'Barlow Condensed',sans-serif",fontSize:16,flexShrink:0}}>
-                  {p.name[0]}
-                </div>
+                <div style={{width:22,textAlign:"center",fontSize:i<3?18:12,flexShrink:0}}>{i<3?["🥇","🥈","🥉"][i]:`${i+1}`}</div>
+                <div style={{width:32,height:32,borderRadius:"50%",background:"var(--g)",color:"var(--gold)",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Barlow Condensed',sans-serif",fontSize:16,flexShrink:0}}>{p.name[0]}</div>
                 <div style={{flex:1}}>
                   <div style={{fontSize:13,fontWeight:700}}>{p.name}</div>
                   <div style={{height:4,background:"#f0dede",borderRadius:2,marginTop:4,overflow:"hidden"}}>
-                    <div style={{height:"100%",width:`${pct}%`,background:i===0?"var(--gold)":"var(--g)",
-                                 borderRadius:2,transition:"width 0.4s"}}/>
+                    <div style={{height:"100%",width:`${pct}%`,background:i===0?"var(--gold)":"var(--g)",borderRadius:2,transition:"width 0.4s"}}/>
                   </div>
                 </div>
-                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:20,color:"var(--g)",flexShrink:0}}>
-                  {pts}
-                </div>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:20,color:"var(--g)",flexShrink:0}}>{pts}</div>
               </div>
             );
           })}
         </div>
 
-        {/* Fitness summary */}
         <div style={{background:"white",borderRadius:14,padding:"14px",border:"1px solid #f0dede",marginBottom:14}}>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",
-                       letterSpacing:"0.04em",marginBottom:10}}>FITNESS TESTING</div>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",letterSpacing:"0.04em",marginBottom:10}}>FITNESS TESTING</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
-            {[
-              {label:"Pre-summer timed", value:stats.preTimes,  color:"#1565c0"},
-              {label:"Post-summer timed",value:stats.postTimes, color:"#2e7d32"},
-            ].map(s=>(
+            {[{label:"Pre-summer timed",value:stats.preTimes,color:"#1565c0"},{label:"Post-summer timed",value:stats.postTimes,color:"#2e7d32"}].map(s=>(
               <div key={s.label} style={{background:"var(--g3)",borderRadius:10,padding:"10px 12px",textAlign:"center"}}>
                 <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:28,color:s.color}}>{s.value}</div>
                 <div style={{fontSize:11,color:"var(--muted)",marginTop:2}}>{s.label}</div>
@@ -2090,21 +1773,12 @@ function DashboardTab({ allPlayers }) {
           </div>
         </div>
 
-        {/* Registration: unregistered players */}
         {stats.total - stats.registered > 0 && (
           <div style={{background:"white",borderRadius:14,padding:"14px",border:"1px solid #f0dede"}}>
-            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",
-                         letterSpacing:"0.04em",marginBottom:10}}>
-              ⏳ NOT YET REGISTERED ({stats.total - stats.registered})
-            </div>
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",letterSpacing:"0.04em",marginBottom:10}}>⏳ NOT YET REGISTERED ({stats.total - stats.registered})</div>
             {allPlayers.filter(p=>!claimedIds.has(p.id)).map(p=>(
-              <div key={p.id} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",
-                                      borderBottom:"1px solid #f8f0f0"}}>
-                <div style={{width:28,height:28,borderRadius:"50%",background:"#e65100",color:"#fff",
-                             display:"flex",alignItems:"center",justifyContent:"center",
-                             fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,flexShrink:0}}>
-                  {p.name[0]}
-                </div>
+              <div key={p.id} style={{display:"flex",alignItems:"center",gap:8,padding:"6px 0",borderBottom:"1px solid #f8f0f0"}}>
+                <div style={{width:28,height:28,borderRadius:"50%",background:"#e65100",color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,flexShrink:0}}>{p.name[0]}</div>
                 <div style={{flex:1,fontSize:13,fontWeight:600}}>{p.name}</div>
                 <div style={{fontSize:11,color:"#e65100",fontWeight:700}}>No account</div>
               </div>
@@ -2113,37 +1787,21 @@ function DashboardTab({ allPlayers }) {
         )}
       </>}
 
-      {/* ── SQUAD ── */}
       {activeView === "squad" && (
         <div style={{background:"white",borderRadius:14,padding:"14px",border:"1px solid #f0dede"}}>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",
-                       letterSpacing:"0.04em",marginBottom:10}}>ALL PLAYERS · {sortedPlayers.length} TOTAL</div>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",letterSpacing:"0.04em",marginBottom:10}}>ALL PLAYERS · {sortedPlayers.length} TOTAL</div>
           {sortedPlayers.map((p,i)=>{
             const pts    = ptsMap[p.id]||0;
             const pct    = Math.round((pts/maxPossible)*100);
             const active = claimedIds.has(p.id);
             return (
-              <div key={p.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 0",
-                                      borderBottom:"1px solid #f8f0f0"}}>
-                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:16,width:24,
-                             color:"var(--muted)",textAlign:"center",flexShrink:0}}>
-                  {i+1}
-                </div>
-                <div style={{width:32,height:32,borderRadius:"50%",
-                             background:active?"var(--g)":"#ccc",
-                             color:active?"var(--gold)":"#fff",
-                             display:"flex",alignItems:"center",justifyContent:"center",
-                             fontFamily:"'Barlow Condensed',sans-serif",fontSize:16,flexShrink:0}}>
-                  {p.name[0]}
-                </div>
+              <div key={p.id} style={{display:"flex",alignItems:"center",gap:10,padding:"9px 0",borderBottom:"1px solid #f8f0f0"}}>
+                <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:16,width:24,color:"var(--muted)",textAlign:"center",flexShrink:0}}>{i+1}</div>
+                <div style={{width:32,height:32,borderRadius:"50%",background:active?"var(--g)":"#ccc",color:active?"var(--gold)":"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Barlow Condensed',sans-serif",fontSize:16,flexShrink:0}}>{p.name[0]}</div>
                 <div style={{flex:1}}>
-                  <div style={{fontSize:13,fontWeight:700,display:"flex",alignItems:"center",gap:6}}>
-                    {p.name}
-                    {!active && <span style={{fontSize:10,color:"#e65100",fontWeight:700}}>no account</span>}
-                  </div>
+                  <div style={{fontSize:13,fontWeight:700,display:"flex",alignItems:"center",gap:6}}>{p.name}{!active && <span style={{fontSize:10,color:"#e65100",fontWeight:700}}>no account</span>}</div>
                   <div style={{height:3,background:"#f0dede",borderRadius:2,marginTop:4,overflow:"hidden"}}>
-                    <div style={{height:"100%",width:`${pct}%`,
-                                 background:i===0?"var(--gold)":"var(--g)",borderRadius:2}}/>
+                    <div style={{height:"100%",width:`${pct}%`,background:i===0?"var(--gold)":"var(--g)",borderRadius:2}}/>
                   </div>
                 </div>
                 <div style={{textAlign:"right",flexShrink:0}}>
@@ -2156,84 +1814,46 @@ function DashboardTab({ allPlayers }) {
         </div>
       )}
 
-      {/* ── WEEKLY BREAKDOWN ── */}
       {activeView === "weekly" && (
         <div style={{background:"white",borderRadius:14,padding:"14px",border:"1px solid #f0dede"}}>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",
-                       letterSpacing:"0.04em",marginBottom:10}}>POINTS BY WEEK · SQUAD</div>
-          {/* Week headers */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr repeat(8,40px)",gap:4,
-                       fontSize:10,fontWeight:700,color:"var(--muted)",textTransform:"uppercase",
-                       letterSpacing:"0.05em",marginBottom:6,textAlign:"center"}}>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",letterSpacing:"0.04em",marginBottom:10}}>POINTS BY WEEK · SQUAD</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr repeat(8,40px)",gap:4,fontSize:10,fontWeight:700,color:"var(--muted)",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:6,textAlign:"center"}}>
             <div style={{textAlign:"left"}}>Player</div>
-            {WEEKS.map(w=>(
-              <div key={w.week} style={{color:w.week===currentWeek?"var(--g)":"var(--muted)"}}>
-                W{w.week}
-              </div>
-            ))}
+            {WEEKS.map(w=>(<div key={w.week} style={{color:w.week===currentWeek?"var(--g)":"var(--muted)"}}>W{w.week}</div>))}
           </div>
           {sortedPlayers.map(p=>(
-            <div key={p.id} style={{display:"grid",gridTemplateColumns:"1fr repeat(8,40px)",gap:4,
-                                    padding:"5px 0",borderBottom:"1px solid #f8f0f0",
-                                    alignItems:"center",textAlign:"center"}}>
-              <div style={{fontSize:12,fontWeight:600,textAlign:"left",overflow:"hidden",
-                           textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.name.split(" ")[0]}</div>
+            <div key={p.id} style={{display:"grid",gridTemplateColumns:"1fr repeat(8,40px)",gap:4,padding:"5px 0",borderBottom:"1px solid #f8f0f0",alignItems:"center",textAlign:"center"}}>
+              <div style={{fontSize:12,fontWeight:600,textAlign:"left",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{p.name.split(" ")[0]}</div>
               {WEEKS.map(w=>{
-                const wPts  = weeklyMap[p.id]?.[w.week] || 0;
-                const wMax  = weekMaxPts(w);
-                const wPct  = Math.round((wPts/wMax)*100);
-                const bg    = wPts===0 ? "#f0dede" : wPct>=80 ? "var(--g)" : wPct>=40 ? "#e06060" : "#f5c0c0";
-                const col   = wPts===0 ? "var(--muted)" : wPct>=40 ? "#fff" : "var(--dark)";
-                return (
-                  <div key={w.week} style={{background:bg,borderRadius:4,padding:"3px 0",
-                                            fontSize:11,fontWeight:700,color:col}}>
-                    {wPts||""}
-                  </div>
-                );
+                const wPts = weeklyMap[p.id]?.[w.week] || 0;
+                const wMax = weekMaxPts(w);
+                const wPct = Math.round((wPts/wMax)*100);
+                const bg   = wPts===0 ? "#f0dede" : wPct>=80 ? "var(--g)" : wPct>=40 ? "#e06060" : "#f5c0c0";
+                const col  = wPts===0 ? "var(--muted)" : wPct>=40 ? "#fff" : "var(--dark)";
+                return (<div key={w.week} style={{background:bg,borderRadius:4,padding:"3px 0",fontSize:11,fontWeight:700,color:col}}>{wPts||""}</div>);
               })}
             </div>
           ))}
-          {/* Legend */}
           <div style={{display:"flex",gap:12,marginTop:10,fontSize:10,color:"var(--muted)"}}>
-            {[["var(--g)","High"],["#f5c0c0","Low"],["#f0dede","None"]].map(([bg,l])=>(
-              <div key={l} style={{display:"flex",alignItems:"center",gap:4}}>
-                <div style={{width:10,height:10,borderRadius:2,background:bg,flexShrink:0}}/>
-                {l}
-              </div>
-            ))}
+            {[["var(--g)","High"],["#f5c0c0","Low"],["#f0dede","None"]].map(([bg,l])=>(<div key={l} style={{display:"flex",alignItems:"center",gap:4}}><div style={{width:10,height:10,borderRadius:2,background:bg,flexShrink:0}}/>{l}</div>))}
           </div>
         </div>
       )}
 
-      {/* ── ACTIVITY LOG ── */}
       {activeView === "log" && (
         <div style={{background:"white",borderRadius:14,padding:"14px",border:"1px solid #f0dede"}}>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",
-                       letterSpacing:"0.04em",marginBottom:10}}>RECENT ACTIVITY</div>
-          {recentLog.length === 0 && (
-            <div style={{textAlign:"center",color:"var(--muted)",padding:"20px 0",fontSize:13}}>
-              No activity logged yet
-            </div>
-          )}
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",letterSpacing:"0.04em",marginBottom:10}}>RECENT ACTIVITY</div>
+          {recentLog.length === 0 && <div style={{textAlign:"center",color:"var(--muted)",padding:"20px 0",fontSize:13}}>No activity logged yet</div>}
           {recentLog.map((r,i)=>{
             const s = actionStyle[r.action] || {icon:"•",color:"var(--muted)",bg:"#f5f5f5"};
             return (
-              <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",
-                                   borderBottom:i<recentLog.length-1?"1px solid #f8f0f0":"none"}}>
-                <div style={{width:30,height:30,borderRadius:"50%",background:s.bg,
-                             display:"flex",alignItems:"center",justifyContent:"center",
-                             fontSize:14,flexShrink:0}}>
-                  {s.icon}
-                </div>
+              <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:i<recentLog.length-1?"1px solid #f8f0f0":"none"}}>
+                <div style={{width:30,height:30,borderRadius:"50%",background:s.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>{s.icon}</div>
                 <div style={{flex:1}}>
-                  <div style={{fontSize:12,fontWeight:600,color:"var(--dark)"}}>
-                    {r.player_name || r.user_email?.split("@")[0]}
-                  </div>
+                  <div style={{fontSize:12,fontWeight:600,color:"var(--dark)"}}>{r.player_name || r.user_email?.split("@")[0]}</div>
                   <div style={{fontSize:11,color:"var(--muted)",marginTop:1}}>{r.detail}</div>
                 </div>
-                <div style={{fontSize:10,color:"var(--muted)",flexShrink:0,textAlign:"right"}}>
-                  {fmtAgo(r.created_at)}
-                </div>
+                <div style={{fontSize:10,color:"var(--muted)",flexShrink:0,textAlign:"right"}}>{fmtAgo(r.created_at)}</div>
               </div>
             );
           })}
@@ -2243,22 +1863,17 @@ function DashboardTab({ allPlayers }) {
   );
 }
 
-
-
-function AdminTab({ allPlayers, onRefresh, showToast }) {
-  const [newName, setNewName]         = useState("");
-  const [adding, setAdding]           = useState(false);
-  const [playerStats, setPlayerStats] = useState({});
-  const [claimedIds, setClaimedIds]   = useState(new Set());
+function AdminTab({ allPlayers, onRefresh, showToast, currentSquad }) {
+  const [newName,      setNewName]      = useState("");
+  const [adding,       setAdding]       = useState(false);
+  const [playerStats,  setPlayerStats]  = useState({});
+  const [claimedIds,   setClaimedIds]   = useState(new Set());
 
   useEffect(() => {
     async function load() {
       const { data: comps } = await sb.from("task_completions").select("player_id,task_key");
       const stats = {};
-      comps?.forEach(r => {
-        if (!stats[r.player_id]) stats[r.player_id] = {};
-        stats[r.player_id][r.task_key] = true;
-      });
+      comps?.forEach(r => { if (!stats[r.player_id]) stats[r.player_id] = {}; stats[r.player_id][r.task_key] = true; });
       setPlayerStats(stats);
       const { data: links } = await sb.from("parent_players").select("player_id");
       setClaimedIds(new Set(links?.map(l => l.player_id) || []));
@@ -2269,9 +1884,9 @@ function AdminTab({ allPlayers, onRefresh, showToast }) {
   async function addPlayer() {
     if (!newName.trim()) return;
     setAdding(true);
-    const { error } = await sb.from("players").insert({ name: newName.trim() });
+    const { error } = await sb.from("players").insert({ name: newName.trim(), squad: currentSquad });
     if (error) { showToast("❌ Error adding player"); }
-    else { showToast(`✅ ${newName.trim()} added!`); setNewName(""); onRefresh(); }
+    else { showToast(`✅ ${newName.trim()} added to ${currentSquad === "2017" ? "U9 Girls" : "U11 Girls"}!`); setNewName(""); onRefresh(); }
     setAdding(false);
   }
 
@@ -2287,10 +1902,10 @@ function AdminTab({ allPlayers, onRefresh, showToast }) {
   const unclaimed = allPlayers.filter(p => !claimedIds.has(p.id));
 
   return (
-    <div className="admin-wrap">
+    <div>
       <div className="admin-banner">
         <div style={{fontSize:28}}>⚙️</div>
-        <div><h2>ADMIN PANEL</h2><p>Manage squad · View completions</p></div>
+        <div><h2>ADMIN PANEL</h2><p>Managing: {currentSquad === "2017" ? "U9 Girls" : "U11 Girls"}</p></div>
       </div>
       <div className="section-title">ADD PLAYER</div>
       <div className="add-form">
@@ -2314,10 +1929,7 @@ function AdminTab({ allPlayers, onRefresh, showToast }) {
         {unclaimed.map(p => (
           <div key={p.id} className="player-row" style={{borderLeft:"3px solid #e65100"}}>
             <div className="player-av" style={{background:"#e65100"}}>{p.name[0]}</div>
-            <div className="player-info">
-              <div className="player-name">{p.name}</div>
-              <div style={{fontSize:11,color:"var(--muted)"}}>Parent hasn't signed up yet</div>
-            </div>
+            <div className="player-info"><div className="player-name">{p.name}</div><div style={{fontSize:11,color:"var(--muted)"}}>Parent hasn't signed up yet</div></div>
             <button className="btn btn-sm btn-danger" onClick={()=>removePlayer(p.id,p.name)}>✕</button>
           </div>
         ))}
@@ -2331,10 +1943,7 @@ function AdminTab({ allPlayers, onRefresh, showToast }) {
           return (
             <div key={p.id} className="player-row" style={{borderLeft:"3px solid #2e7d32"}}>
               <div className="player-av">{p.name[0]}</div>
-              <div className="player-info">
-                <div className="player-name">{p.name}</div>
-                <div className="prog-mini"><div className="prog-mini-fill" style={{width:`${pct}%`}}/></div>
-              </div>
+              <div className="player-info"><div className="player-name">{p.name}</div><div className="prog-mini"><div className="prog-mini-fill" style={{width:`${pct}%`}}/></div></div>
               <div className="player-pts">{pts} <small>pts</small></div>
               <button className="btn btn-sm btn-danger" onClick={()=>removePlayer(p.id,p.name)}>✕</button>
             </div>
