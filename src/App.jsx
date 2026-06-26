@@ -464,7 +464,8 @@ export default function App() {
       .select("player_id, players(id,name,squad)")
       .eq("user_id", session.user.id)
       .maybeSingle();
-    if (link?.players) {
+    // Only accept the link if the player belongs to this app's squad
+    if (link?.players && link.players.squad === SQUAD) {
       setPlayer(link.players);
       const { data: comps } = await sb
         .from("task_completions")
@@ -508,6 +509,12 @@ export default function App() {
   }
 
   async function linkPlayer(playerId) {
+    // Double-check this player belongs to the correct squad before linking
+    const { data: p } = await sb.from("players").select("squad").eq("id", playerId).maybeSingle();
+    if (!p || p.squad !== SQUAD) {
+      showToast("❌ This player is not in the correct squad for this app.");
+      return;
+    }
     await sb.from("parent_players")
       .upsert({ user_id: session.user.id, player_id: playerId }, { onConflict:"user_id,player_id" });
     await loadPlayerData();
@@ -1649,7 +1656,7 @@ function DashboardTab({ allPlayers, squadLabel, squadFilter = SQUAD }) {
     Promise.all([
       sb.from("task_completions").select("player_id,task_key,completed_at").in("player_id", ids),
       sb.from("parent_players").select("player_id").in("player_id", ids),
-      sb.from("audit_log").select("user_email,player_name,action,detail,created_at").order("created_at",{ascending:false}).limit(20),
+      sb.from("audit_log").select("user_email,player_name,action,detail,created_at,player_id").order("created_at",{ascending:false}).limit(100),
     ]).then(([{data:comps},{data:links},{data:logs}]) => {
       const byPlayer = {};
       ids.forEach(id => { byPlayer[id] = {}; });
@@ -1663,7 +1670,9 @@ function DashboardTab({ allPlayers, squadLabel, squadFilter = SQUAD }) {
       setWeeklyMap(wm);
 
       setClaimedIds(new Set(links?.map(l => l.player_id) || []));
-      setRecentLog(logs || []);
+      // Filter activity log to only show entries for this squad's players
+      const squadLogs = (logs || []).filter(r => !r.player_id || ids.includes(r.player_id));
+      setRecentLog(squadLogs.slice(0, 20));
 
       const totalSessions    = comps?.length || 0;
       const playersActive    = new Set(comps?.map(r => r.player_id)).size;
@@ -1682,11 +1691,12 @@ function DashboardTab({ allPlayers, squadLabel, squadFilter = SQUAD }) {
   const maxPossible    = WEEKS.reduce((a,w)=>a+weekMaxPts(w),0);
 
   const actionStyle = {
-    task_complete:   { icon:"✅", color:"#2e7d32", bg:"#e8f5e9" },
-    task_incomplete: { icon:"↩️", color:"#e65100", bg:"#fff3e0" },
-    lap_saved:       { icon:"⏱", color:"#1565c0", bg:"#e3f2fd" },
-    lap_cleared:     { icon:"🗑", color:"#9e9e9e", bg:"#f5f5f5" },
-    note_saved:      { icon:"📝", color:"#7b1fa2", bg:"#f3e5f5" },
+    task_complete:   { icon:"✅", color:"#2e7d32", bg:"#e8f5e9",  label:"Marked complete"   },
+    task_incomplete: { icon:"↩️", color:"#e65100", bg:"#fff3e0",  label:"Marked incomplete" },
+    lap_saved:       { icon:"⏱️", color:"#1565c0", bg:"#e3f2fd",  label:"Lap time saved"    },
+    lap_cleared:     { icon:"🗑️", color:"#9e9e9e", bg:"#f5f5f5",  label:"Lap time cleared"  },
+    note_saved:      { icon:"📋", color:"#7b1fa2", bg:"#f3e5f5",  label:"Coach note saved"  },
+    video_watched:   { icon:"▶️", color:"#c62828", bg:"#ffebee",  label:"Video watched"     },
   };
 
   const fmtAgo = (ts) => {
@@ -1827,15 +1837,22 @@ function DashboardTab({ allPlayers, squadLabel, squadFilter = SQUAD }) {
           <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",letterSpacing:"0.04em",marginBottom:10}}>RECENT ACTIVITY</div>
           {recentLog.length === 0 && <div style={{textAlign:"center",color:"var(--muted)",padding:"20px 0",fontSize:13}}>No activity logged yet</div>}
           {recentLog.map((r,i)=>{
-            const s = actionStyle[r.action] || {icon:"•",color:"var(--muted)",bg:"#f5f5f5"};
+            const s = actionStyle[r.action] || {icon:"•",color:"var(--muted)",bg:"#f5f5f5",label:r.action};
+            const fullDate = r.created_at ? new Date(r.created_at).toLocaleString("en-IE", {
+              day:"numeric", month:"short", year:"numeric",
+              hour:"2-digit", minute:"2-digit"
+            }) : "";
             return (
-              <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:i<recentLog.length-1?"1px solid #f8f0f0":"none"}}>
-                <div style={{width:30,height:30,borderRadius:"50%",background:s.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,flexShrink:0}}>{s.icon}</div>
+              <div key={i} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"10px 0",borderBottom:i<recentLog.length-1?"1px solid #f8f0f0":"none"}}>
+                <div style={{width:34,height:34,borderRadius:"50%",background:s.bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0,marginTop:2}}>{s.icon}</div>
                 <div style={{flex:1}}>
-                  <div style={{fontSize:12,fontWeight:600,color:"var(--dark)"}}>{r.player_name || r.user_email?.split("@")[0]}</div>
-                  <div style={{fontSize:11,color:"var(--muted)",marginTop:1}}>{r.detail}</div>
+                  <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
+                    <div style={{fontSize:13,fontWeight:700,color:"var(--dark)"}}>{r.player_name || r.user_email?.split("@")[0]}</div>
+                    <div style={{fontSize:11,fontWeight:700,color:s.color,background:s.bg,padding:"1px 8px",borderRadius:10}}>{s.label}</div>
+                  </div>
+                  <div style={{fontSize:12,color:"var(--mid)",marginTop:3,lineHeight:1.4}}>{r.detail}</div>
+                  <div style={{fontSize:10,color:"var(--muted)",marginTop:3}}>🕐 {fullDate}</div>
                 </div>
-                <div style={{fontSize:10,color:"var(--muted)",flexShrink:0,textAlign:"right"}}>{fmtAgo(r.created_at)}</div>
               </div>
             );
           })}
