@@ -587,7 +587,7 @@ export default function App() {
         {session && isAdmin && tab === "coaches" && (
           <div className="admin-wrap">
             <SuperAdminSquadToggle />
-            <CoachesTab allPlayers={allPlayers} coachEmail={session.user.email} showToast={showToast} squadLabel={adminSquadView === "2017" ? "U9 Girls" : "U11 Girls"} />
+            <CoachesTab allPlayers={allPlayers} coachEmail={session.user.email} showToast={showToast} squadLabel={adminSquadView === "2017" ? "U9 Girls" : "U11 Girls"} squadFilter={adminSquadView} />
           </div>
         )}
         {session && isAdmin && tab === "admin" && (
@@ -621,9 +621,9 @@ function AuthScreen({ showToast }) {
   const [tcAgreed, setTcAgreed]       = useState(false);
   const [showTc, setShowTc]           = useState(false);
 
- const redirectUrl = SQUAD === "2017"
-  ? "https://fingallians-2017-girls.vercel.app"
-  : "https://fingallians-2015-girls.vercel.app";
+  const redirectUrl = SQUAD === "2017"
+    ? "https://fingallians-girls-2017.vercel.app"
+    : "https://fingallians-girls.vercel.app";
 
   async function submit() {
     setErr(""); setBusy(true);
@@ -648,7 +648,7 @@ function AuthScreen({ showToast }) {
         <div className="auth-hero">
           <div className="crest-large"><img src={LOGO} alt="Fingallians GAA" /></div>
           <h2>SUMMER FITNESS CHALLENGE</h2>
-          <p>June–August 2026 · 8 Weeks<br/>Runs · Skills · Squad Sessions</p>
+          <p>{SQUAD_LABEL} · June–August 2026 · 8 Weeks<br/>Runs · Skills · Squad Sessions</p>
         </div>
         <div className="card">
           <div className="card-bd" style={{textAlign:"center",padding:"28px 20px"}}>
@@ -1242,7 +1242,7 @@ function ProgressTab({ player, checks, isAdmin }) {
   );
 }
 
-function CoachesTab({ allPlayers, coachEmail, showToast, squadLabel }) {
+function CoachesTab({ allPlayers, coachEmail, showToast, squadLabel, squadFilter }) {
   const [sub, setSub] = useState("leaderboard");
   const subTabs = [{ id:"leaderboard", label:"Leaderboard" }, { id:"fitness", label:"Testing" }];
   return (
@@ -1259,19 +1259,19 @@ function CoachesTab({ allPlayers, coachEmail, showToast, squadLabel }) {
           }}>{t.label}</button>
         ))}
       </div>
-      {sub === "leaderboard" && <ScoresTab squadLabel={squadLabel} />}
+      {sub === "leaderboard" && <ScoresTab squadLabel={squadLabel} squadFilter={squadFilter} />}
       {sub === "fitness"     && <FitnessTab allPlayers={allPlayers} coachEmail={coachEmail} showToast={showToast} />}
     </div>
   );
 }
 
-function ScoresTab({ squadLabel }) {
+function ScoresTab({ squadLabel, squadFilter = SQUAD }) {
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
-      const { data: players } = await sb.from("players").select("id,name").eq("squad", SQUAD);
+      const { data: players } = await sb.from("players").select("id,name").eq("squad", squadFilter);
       const { data: comps }   = await sb.from("task_completions").select("player_id,task_key");
       if (!players) return;
       const statsMap = {};
@@ -1281,7 +1281,7 @@ function ScoresTab({ squadLabel }) {
       setLoading(false);
     }
     load();
-  }, []);
+  }, [squadFilter]);
 
   const rankEmoji = (i) => i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `${i+1}`;
   const maxPossible = WEEKS.reduce((a,w) => a + weekMaxPts(w), 0);
@@ -1640,7 +1640,7 @@ function ResultsTable({ allPlayers, period, ptsMap = {} }) {
   );
 }
 
-function DashboardTab({ allPlayers, squadLabel }) {
+function DashboardTab({ allPlayers, squadLabel, squadFilter = SQUAD }) {
   const [stats,      setStats]      = useState(null);
   const [loading,    setLoading]    = useState(true);
   const [recentLog,  setRecentLog]  = useState([]);
