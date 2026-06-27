@@ -734,6 +734,19 @@ function AuthScreen({ showToast }) {
       const { error } = await sb.auth.signUp({ email, password: pw, options: { emailRedirectTo: redirectUrl } });
       if (error) { setErr(error.message); setBusy(false); return; }
       setSignedUpEmail(email);
+      // Log T&Cs agreement
+      try {
+        await sb.from("audit_log").insert({
+          user_email: email,
+          player_id: null,
+          player_name: null,
+          action: "tc_agreed_at_signup",
+          detail: "User agreed to Terms & Conditions at account creation",
+          squad: null,
+          old_value: null,
+          new_value: new Date().toISOString(),
+        });
+      } catch(_) {}
       setMode("verify");
     } else {
       const { error } = await sb.auth.signInWithPassword({ email, password: pw });
@@ -1065,6 +1078,19 @@ function WAConsentButton({ waConsent, setWaConsent }) {
     try { localStorage.setItem("waConsent", "true"); } catch(e) {}
     setWaConsent(true);
     setShowModal(false);
+    // Log WhatsApp consent
+    try {
+      sb.from("audit_log").insert({
+        user_email: null,
+        player_id: null,
+        player_name: null,
+        action: "wa_consent_given",
+        detail: "User agreed to WhatsApp group T&Cs and joined the group",
+        squad: null,
+        old_value: null,
+        new_value: new Date().toISOString(),
+      });
+    } catch(_) {}
     window.open(WHATSAPP_LINK, "_blank", "noopener,noreferrer");
   }
 
@@ -2204,6 +2230,77 @@ function downloadCSV(allPlayers, ptsMap, weeklyMap) {
   URL.revokeObjectURL(url);
 }
 
+
+function ConsentLog() {
+  const [records, setRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    sb.from("audit_log")
+      .select("user_email,player_name,action,detail,created_at,squad")
+      .in("action", ["tc_agreed_at_signup","wa_consent_given"])
+      .order("created_at", { ascending: false })
+      .then(({ data }) => { setRecords(data || []); setLoading(false); });
+  }, []);
+
+  const tcCount = records.filter(r => r.action === "tc_agreed_at_signup").length;
+  const waCount = records.filter(r => r.action === "wa_consent_given").length;
+
+  return (
+    <div style={{background:"white",borderRadius:14,padding:"14px",border:"1px solid #f0dede"}}>
+      <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",letterSpacing:"0.04em",marginBottom:14}}>
+        CONSENT LOG
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+        <div style={{background:"#e3f2fd",borderRadius:12,padding:"12px 14px",textAlign:"center"}}>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:32,color:"#1565c0"}}>{tcCount}</div>
+          <div style={{fontSize:11,color:"#1565c0",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",marginTop:2}}>📋 T&Cs Agreed</div>
+        </div>
+        <div style={{background:"#e8f5e9",borderRadius:12,padding:"12px 14px",textAlign:"center"}}>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:32,color:"#25a244"}}>{waCount}</div>
+          <div style={{fontSize:11,color:"#25a244",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",marginTop:2}}>💬 WhatsApp Consent</div>
+        </div>
+      </div>
+      {loading && <div style={{textAlign:"center",color:"var(--muted)",padding:"16px 0",fontSize:13}}>Loading…</div>}
+      {!loading && records.length === 0 && (
+        <div style={{textAlign:"center",color:"var(--muted)",padding:"16px 0",fontSize:13}}>No consent records yet</div>
+      )}
+      {!loading && records.map((r, i) => {
+        const isTc = r.action === "tc_agreed_at_signup";
+        const color = isTc ? "#1565c0" : "#25a244";
+        const bg    = isTc ? "#e3f2fd" : "#e8f5e9";
+        const icon  = isTc ? "📋" : "💬";
+        const label = isTc ? "T&Cs at signup" : "WhatsApp consent";
+        const fullDate = r.created_at ? new Date(r.created_at).toLocaleString("en-IE", {
+          day:"numeric", month:"short", year:"numeric",
+          hour:"2-digit", minute:"2-digit"
+        }) : "";
+        return (
+          <div key={i} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"10px 0",
+                               borderBottom:i<records.length-1?"1px solid #f8f0f0":"none"}}>
+            <div style={{width:34,height:34,borderRadius:"50%",background:bg,display:"flex",
+                         alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>{icon}</div>
+            <div style={{flex:1}}>
+              <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
+                <div style={{fontSize:13,fontWeight:700,color:"var(--dark)"}}>
+                  {r.user_email || "Unknown"}
+                </div>
+                <div style={{fontSize:11,fontWeight:700,color:color,background:bg,
+                             padding:"1px 8px",borderRadius:10}}>{label}</div>
+              </div>
+              <div style={{fontSize:10,color:"var(--muted)",marginTop:3}}>🕐 {fullDate}</div>
+            </div>
+          </div>
+        );
+      })}
+      <div style={{marginTop:14,padding:"10px 12px",background:"#f9f9f9",borderRadius:10,
+                   fontSize:11,color:"var(--muted)",lineHeight:1.6}}>
+        💡 These records are also stored permanently in your Supabase audit_log table and can be exported at any time.
+      </div>
+    </div>
+  );
+}
+
 function DashboardTab({ allPlayers, squadLabel, squadFilter = SQUAD }) {
   const [stats,      setStats]      = useState(null);
   const [loading,    setLoading]    = useState(true);
@@ -2254,7 +2351,9 @@ function DashboardTab({ allPlayers, squadLabel, squadFilter = SQUAD }) {
   const maxPossible    = WEEKS.reduce((a,w)=>a+weekMaxPts(w),0);
 
   const actionStyle = {
-    task_complete:   { icon:"✅", color:"#2e7d32", bg:"#e8f5e9",  label:"Marked complete"   },
+    tc_agreed_at_signup: { icon:"📋", color:"#1565c0", bg:"#e3f2fd", label:"Agreed to T&Cs"    },
+    wa_consent_given:    { icon:"💬", color:"#25a244", bg:"#e8f5e9", label:"WhatsApp consent"  },
+    task_complete:       { icon:"✅", color:"#2e7d32", bg:"#e8f5e9",  label:"Marked complete"   },
     task_incomplete: { icon:"↩️", color:"#e65100", bg:"#fff3e0",  label:"Marked incomplete" },
     lap_saved:       { icon:"⏱️", color:"#1565c0", bg:"#e3f2fd",  label:"Lap time saved"    },
     lap_cleared:     { icon:"🗑️", color:"#9e9e9e", bg:"#f5f5f5",  label:"Lap time cleared"  },
@@ -2280,7 +2379,7 @@ function DashboardTab({ allPlayers, squadLabel, squadFilter = SQUAD }) {
         <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:28,color:"var(--gold)",letterSpacing:"0.02em"}}>SQUAD DASHBOARD</div>
         <div style={{fontSize:12,opacity:0.7,marginTop:2}}>Fingallians Girls {squadLabel ? `· ${squadLabel}` : ""} · Week {currentWeek} of 8 · Summer Challenge 2026</div>
         <div style={{display:"flex",gap:6,marginTop:12,flexWrap:"wrap"}}>
-          {[["overview","Overview"],["log","Activity Log"]].map(([v,l])=>(
+          {[["overview","Overview"],["log","Activity Log"],["consent","Consent Log"]].map(([v,l])=>(
             <button key={v} onClick={()=>setActiveView(v)} style={{padding:"5px 12px",borderRadius:16,border:"1px solid rgba(255,255,255,0.3)",background:activeView===v?"rgba(255,255,255,0.2)":"transparent",color:"#fff",fontSize:12,cursor:"pointer",fontFamily:"inherit",fontWeight:activeView===v?700:400}}>{l}</button>
           ))}
         </div>
@@ -2430,6 +2529,8 @@ function DashboardTab({ allPlayers, squadLabel, squadFilter = SQUAD }) {
           })}
         </div>
       )}
+
+      {activeView === "consent" && <ConsentLog />}
     </div>
   );
 }
