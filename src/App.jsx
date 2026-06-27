@@ -1048,6 +1048,98 @@ function EmailCoachesButton({ label = "📧 Message the Coaches", player }) {
   return <ContactForm player={player} />;
 }
 
+
+function WAConsentButton({ waConsent, setWaConsent }) {
+  const [showModal, setShowModal] = useState(false);
+  const [ticked, setTicked]       = useState(false);
+
+  function handleClick() {
+    if (waConsent) {
+      window.open(WHATSAPP_LINK, "_blank", "noopener,noreferrer");
+    } else {
+      setShowModal(true);
+    }
+  }
+
+  function handleConfirm() {
+    try { localStorage.setItem("waConsent", "true"); } catch(e) {}
+    setWaConsent(true);
+    setShowModal(false);
+    window.open(WHATSAPP_LINK, "_blank", "noopener,noreferrer");
+  }
+
+  return (
+    <>
+      {/* Always-visible WhatsApp button */}
+      <button onClick={handleClick}
+        style={{display:"inline-flex",alignItems:"center",gap:8,background:"#25D366",
+                color:"white",fontFamily:"'Barlow Condensed',sans-serif",fontSize:18,
+                letterSpacing:"0.04em",fontWeight:900,padding:"11px 22px",
+                borderRadius:24,border:"none",cursor:"pointer",
+                boxShadow:"0 4px 14px rgba(0,0,0,0.25)"}}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+        </svg>
+        JOIN THE WHATSAPP GROUP
+      </button>
+      <div style={{fontSize:11,opacity:0.7,marginTop:10,lineHeight:1.5}}>
+        Join the group and post your videos and photos directly — coaches will be watching! 👀
+      </div>
+
+      {/* Consent modal — only on first tap */}
+      {showModal && (
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.7)",zIndex:10000,
+                     display:"flex",alignItems:"flex-end",justifyContent:"center"}}
+          onClick={e => { if(e.target===e.currentTarget) setShowModal(false); }}>
+          <div style={{background:"white",borderRadius:"20px 20px 0 0",padding:"24px 20px 36px",
+                       width:"100%",maxWidth:560,boxShadow:"0 -8px 40px rgba(0,0,0,0.3)"}}>
+            <div style={{width:40,height:4,background:"#e0e0e0",borderRadius:2,margin:"0 auto 20px"}} />
+            <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:22,
+                         color:"var(--g)",letterSpacing:"0.02em",marginBottom:14}}>
+              BEFORE YOU JOIN
+            </div>
+            <div style={{fontSize:13,color:"#333",lineHeight:1.7,marginBottom:16}}>
+              <p style={{marginBottom:8}}>Please read and agree to the following before joining the WhatsApp group:</p>
+              <ul style={{paddingLeft:18,display:"flex",flexDirection:"column",gap:6}}>
+                <li>This challenge is organised voluntarily by Fingallians coaches and is <strong>not an official Fingallians GAA Club programme</strong>. The club accepts no responsibility for its operation.</li>
+                <li>Your <strong>phone number will be visible</strong> to all other group members.</li>
+                <li>Only share content you are happy for <strong>the full group to see</strong>.</li>
+                <li>Do <strong>not share photos or videos of other children</strong> without their parent or guardian's consent.</li>
+                <li>Coaches reserve the right to remove any member from the group.</li>
+              </ul>
+            </div>
+            <label style={{display:"flex",alignItems:"flex-start",gap:12,cursor:"pointer",
+                           padding:"12px 14px",background:"#f9f0f0",borderRadius:10,marginBottom:16}}>
+              <input type="checkbox" checked={ticked} onChange={e => setTicked(e.target.checked)}
+                style={{width:20,height:20,accentColor:"#25D366",flexShrink:0,marginTop:1,cursor:"pointer"}} />
+              <span style={{fontSize:13,color:"#333",lineHeight:1.5,fontWeight:600}}>
+                I have read and agree to the above
+              </span>
+            </label>
+            <button onClick={handleConfirm} disabled={!ticked}
+              style={{width:"100%",padding:"14px",border:"none",borderRadius:12,cursor:ticked?"pointer":"not-allowed",
+                      fontFamily:"'Barlow Condensed',sans-serif",fontSize:20,letterSpacing:"0.04em",fontWeight:900,
+                      background:ticked?"#25D366":"#ccc",color:"white",
+                      display:"flex",alignItems:"center",justifyContent:"center",gap:8,
+                      transition:"background 0.2s"}}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+              AGREE &amp; JOIN GROUP
+            </button>
+            <button onClick={() => setShowModal(false)}
+              style={{width:"100%",marginTop:10,padding:"11px",border:"2px solid #e0e0e0",
+                      borderRadius:12,background:"white",cursor:"pointer",color:"#666",
+                      fontFamily:"'Barlow Condensed',sans-serif",fontSize:16}}>
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
 function HomeTab({ player, checks, pts, weeksDone, onNav, onToggle, showToast, waConsent, setWaConsent }) {
   const [activeWk, setActiveWk] = useState(0);
   const streak = computeStreak(checks);
@@ -1110,44 +1202,7 @@ function HomeTab({ player, checks, pts, weeksDone, onNav, onToggle, showToast, w
         <div style={{fontSize:13,opacity:0.85,lineHeight:1.6,marginBottom:14}}>
           Filmed yourself practising? Send your videos and photos to the coaches on WhatsApp — we'd love to see the girls putting in the work! And don't forget — send in proof of your squad session to claim your bonus points! 📸
         </div>
-        {!waConsent ? (
-          <div style={{background:"rgba(255,255,255,0.10)",borderRadius:12,padding:"14px 16px",textAlign:"left"}}>
-            <div style={{fontSize:12,color:"rgba(255,255,255,0.9)",lineHeight:1.7,marginBottom:12}}>
-              <strong style={{display:"block",marginBottom:6,fontSize:13,color:"var(--gold)"}}>Before you join the WhatsApp group:</strong>
-              • This challenge is run by Fingallians coaches voluntarily — it is not an official club programme<br/>
-              • Your phone number will be visible to all group members<br/>
-              • Only share content you are happy for the full group to see<br/>
-              • Do not share photos or videos of other children without parental consent
-            </div>
-            <label style={{display:"flex",alignItems:"flex-start",gap:10,cursor:"pointer",marginBottom:12}}>
-              <input type="checkbox" onChange={e => {
-                if (e.target.checked) {
-                  try { localStorage.setItem("waConsent", "true"); } catch(err) {}
-                  setWaConsent(true);
-                }
-              }} style={{width:18,height:18,accentColor:"#25D366",flexShrink:0,marginTop:2,cursor:"pointer"}} />
-              <span style={{fontSize:12,color:"rgba(255,255,255,0.9)",lineHeight:1.5}}>
-                I understand and agree to the above before joining the WhatsApp group
-              </span>
-            </label>
-          </div>
-        ) : (
-          <>
-            <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer"
-              style={{display:"inline-flex",alignItems:"center",gap:8,background:"#25D366",
-                      color:"white",fontFamily:"'Barlow Condensed',sans-serif",fontSize:18,
-                      letterSpacing:"0.04em",fontWeight:900,padding:"11px 22px",
-                      borderRadius:24,textDecoration:"none",boxShadow:"0 4px 14px rgba(0,0,0,0.25)"}}>
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="white">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-              </svg>
-              JOIN THE WHATSAPP GROUP
-            </a>
-            <div style={{fontSize:11,opacity:0.7,marginTop:10,lineHeight:1.5}}>
-              Join the group and post your videos and photos directly — coaches will be watching! 👀
-            </div>
-          </>
-        )}
+        <WAConsentButton waConsent={waConsent} setWaConsent={setWaConsent} />
       </div>
       <div style={{textAlign:"center",marginTop:14,paddingBottom:8}}>
         <button className="link-btn" style={{color:"var(--muted)",fontSize:13}} onClick={()=>sb.auth.signOut()}>Sign out</button>
