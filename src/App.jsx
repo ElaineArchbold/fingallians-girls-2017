@@ -1084,7 +1084,7 @@ function HomeTab({ player, checks, pts, weeksDone, onNav, onToggle, showToast })
         <div style={{fontSize:24,marginBottom:6}}>📱🏑⚽</div>
         <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:20,letterSpacing:"0.02em",marginBottom:6}}>SHARE YOUR SKILLS!</div>
         <div style={{fontSize:13,opacity:0.85,lineHeight:1.6,marginBottom:14}}>
-          Filmed yourself practising? Send your videos and photos to the coaches on WhatsApp — we'd love to see the girls putting in the work!
+          Filmed yourself practising? Send your videos and photos to the coaches on WhatsApp — we'd love to see the girls putting in the work! And don't forget — send in proof of your squad session to claim your bonus points! 📸
         </div>
         <a href={WHATSAPP_LINK} target="_blank" rel="noopener noreferrer"
           style={{display:"inline-flex",alignItems:"center",gap:8,background:"#25D366",
