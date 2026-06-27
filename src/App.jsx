@@ -251,6 +251,15 @@ function weekPts(w, checks) {
 function weekMaxPts(w) {
   return w.runs.length*PTS.run + w.skills.length*PTS.skill + (w.speed||[]).length*PTS.speed + PTS.squad;
 }
+function computeStreak(checks) {
+  let streak = 0;
+  for (let i = 0; i < WEEKS.length; i++) {
+    if (weekPts(WEEKS[i], checks) > 0) streak++;
+    else break;
+  }
+  return streak;
+}
+
 
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Lato:wght@400;700;900&display=swap');
@@ -403,6 +412,10 @@ body{font-family:'Lato',sans-serif;background:var(--bg);color:var(--dark);min-he
 .add-form{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px;margin-bottom:14px}
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--g);color:white;padding:10px 22px;border-radius:24px;font-weight:700;font-size:14px;box-shadow:0 6px 28px rgba(163,22,33,0.35);z-index:9999;white-space:nowrap;pointer-events:none;animation:tin 0.25s ease}
 @keyframes tin{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+@keyframes confetti-fall{0%{transform:translateY(-10px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+.confetti-piece{position:fixed;width:10px;height:10px;top:-10px;z-index:9998;pointer-events:none;border-radius:2px;animation:confetti-fall 2.2s ease-in forwards}
+
 .empty{text-align:center;padding:52px 24px;color:var(--muted)}
 .empty .icon{font-size:52px;margin-bottom:12px}
 .loader{display:flex;align-items:center;justify-content:center;padding:40px;color:var(--muted)}
@@ -426,6 +439,35 @@ select.inp{appearance:none;cursor:pointer}
 .squad-toggle-btn.active{background:var(--g);color:white}
 `;
 
+
+function Confetti({ trigger }) {
+  const [pieces, setPieces] = useState([]);
+  useEffect(() => {
+    if (!trigger) return;
+    const colors = ["#a31621","#d4a017","#fff","#25D366","#7b1fa2","#e65100"];
+    const newPieces = Array.from({length:36}, (_,i) => ({
+      id: Date.now()+i,
+      left: Math.random()*100,
+      color: colors[Math.floor(Math.random()*colors.length)],
+      delay: Math.random()*0.8,
+      size: 8 + Math.random()*8,
+    }));
+    setPieces(newPieces);
+    const t = setTimeout(() => setPieces([]), 2600);
+    return () => clearTimeout(t);
+  }, [trigger]);
+  return (
+    <>
+      {pieces.map(p => (
+        <div key={p.id} className="confetti-piece"
+          style={{left:`${p.left}%`, background:p.color,
+                  width:p.size, height:p.size,
+                  animationDelay:`${p.delay}s`}} />
+      ))}
+    </>
+  );
+}
+
 export default function App() {
   const [session, setSession]   = useState(null);
   const [loading, setLoading]   = useState(true);
@@ -435,6 +477,7 @@ export default function App() {
   const [checks, setChecks]     = useState({});
   const [allPlayers, setAllPlayers] = useState([]);
   const [playerLoaded, setPlayerLoaded] = useState(false);
+  const [confettiTrigger, setConfettiTrigger] = useState(0);
   // SuperAdmin can toggle between squads
   const [adminSquadView, setAdminSquadView] = useState(SQUAD);
 
@@ -532,7 +575,17 @@ export default function App() {
       logAudit(session.user.email, player, "task_incomplete", label);
     } else {
       await sb.from("task_completions").insert({ player_id: player.id, task_key: taskKey, completed_at: new Date().toISOString() });
-      setChecks(c => ({ ...c, [taskKey]: true }));
+      const newChecks = { ...checks, [taskKey]: true };
+      setChecks(newChecks);
+      // Fire confetti if week is now fully complete
+      const weekMatch2 = taskKey.match(/^w(\d+)-/);
+      if (weekMatch2) {
+        const wNum = parseInt(weekMatch2[1], 10);
+        const wData = WEEKS.find(w => w.week === wNum);
+        if (wData && weekPts(wData, newChecks) === weekMaxPts(wData)) {
+          setConfettiTrigger(t => t + 1);
+        }
+      }
       showToast(`✅ ${label} logged! +${pts} pts`);
       logAudit(session.user.email, player, "task_complete", label, null, `+${pts} pts`);
     }
@@ -636,6 +689,7 @@ export default function App() {
         )}
       </div>
       {toast && <div className="toast">{toast}</div>}
+      <Confetti trigger={confettiTrigger} />
     </>
   );
 }
@@ -973,6 +1027,7 @@ function EmailCoachesButton({ label = "📧 Message the Coaches", player }) {
 
 function HomeTab({ player, checks, pts, weeksDone, onNav, onToggle, showToast }) {
   const [activeWk, setActiveWk] = useState(0);
+  const streak = computeStreak(checks);
   const w = WEEKS[activeWk];
   const ps = PHASE_STYLE[w.phase];
   const wPts = weekPts(w, checks);
@@ -999,7 +1054,10 @@ function HomeTab({ player, checks, pts, weeksDone, onNav, onToggle, showToast })
         <div className="pts-row">
           <div className="pts-box"><div className="num">{pts}</div><div className="lbl2">Total Points</div></div>
           <div className="pts-box"><div className="num">{weeksDone}</div><div className="lbl2">Weeks Done</div></div>
-          <div className="pts-box"><div className="num">{8-weeksDone}</div><div className="lbl2">Weeks Left</div></div>
+          <div className="pts-box">
+            <div className="num" style={{fontSize:streak>0?28:36}}>{streak > 0 ? `🔥${streak}` : weeksDone > 0 ? "✓" : "—"}</div>
+            <div className="lbl2">Week Streak</div>
+          </div>
         </div>
       </div>
       <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:18,color:"var(--g)",marginBottom:10,letterSpacing:"0.02em"}}>SELECT WEEK</div>
@@ -1046,6 +1104,39 @@ function HomeTab({ player, checks, pts, weeksDone, onNav, onToggle, showToast })
   );
 }
 
+
+function WeekCountdown({ weekNum }) {
+  const [timeLeft, setTimeLeft] = useState("");
+
+  useEffect(() => {
+    function calc() {
+      const weekStart = new Date("2026-06-29");
+      weekStart.setDate(weekStart.getDate() + (weekNum - 1) * 7);
+      weekStart.setHours(0,0,0,0);
+      const now = new Date();
+      const diff = weekStart - now;
+      if (diff <= 0) { setTimeLeft(""); return; }
+      const days  = Math.floor(diff / (1000*60*60*24));
+      const hours = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
+      const mins  = Math.floor((diff % (1000*60*60)) / (1000*60));
+      if (days > 0) setTimeLeft(`${days}d ${hours}h`);
+      else if (hours > 0) setTimeLeft(`${hours}h ${mins}m`);
+      else setTimeLeft(`${mins}m`);
+    }
+    calc();
+    const t = setInterval(calc, 60000);
+    return () => clearInterval(t);
+  }, [weekNum]);
+
+  if (!timeLeft) return null;
+  return (
+    <div style={{background:"rgba(0,0,0,0.08)",borderRadius:10,padding:"10px 14px",margin:"10px 18px 4px",textAlign:"center"}}>
+      <div style={{fontSize:11,fontWeight:900,textTransform:"uppercase",letterSpacing:"0.08em",opacity:0.65,marginBottom:3}}>🔒 WEEK UNLOCKS IN</div>
+      <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:28,letterSpacing:"0.04em",fontWeight:900}}>{timeLeft}</div>
+    </div>
+  );
+}
+
 function WeekDetail({ w, ps, pct, wPts, wMax, checks, onToggle, player, showToast }) {
   const [expandedSkill, setExpandedSkill] = useState(null);
   const [expandedSquad, setExpandedSquad] = useState(false);
@@ -1078,6 +1169,7 @@ function WeekDetail({ w, ps, pct, wPts, wMax, checks, onToggle, player, showToas
           <div className="prog-bar-fill" style={{width:`${pct}%`,background:ps.accent}}/>
         </div>
         <div className="prog-lbl">{wPts}/{wMax} pts this week · {pct}% complete</div>
+        <WeekCountdown weekNum={w.week} />
       </div>
 
       {(w.speed||[]).map((s) => {
@@ -1293,6 +1385,44 @@ function PlanTab({ checks, onToggle, player, showToast }) {
   );
 }
 
+
+function ShareProgressButton({ player, checks }) {
+  const pts = totalPts(checks);
+  const weeksDone = WEEKS.filter(w => weekPts(w, checks) === weekMaxPts(w)).length;
+  const streak = computeStreak(checks);
+  const maxPossible = WEEKS.reduce((a,w) => a + weekMaxPts(w), 0);
+  const pct = Math.round((pts / maxPossible) * 100);
+  const currentWeek = Math.min(Math.max(Math.floor((new Date() - new Date("2026-06-29")) / (7*24*60*60*1000)) + 1, 1), 8);
+
+  const lines = [
+    `🏑⚽ Fingallians Summer Challenge 2026`,
+    ``,
+    `${player?.name || "Player"}'s Progress – Week ${currentWeek}`,
+    `⭐ ${pts} points (${pct}% of max)`,
+    weeksDone > 0 ? `✅ ${weeksDone} week${weeksDone > 1 ? "s" : ""} fully completed` : "",
+    streak > 1 ? `🔥 ${streak}-week streak!` : "",
+    ``,
+    `Fins Abú 🔴⚪️`,
+  ].filter(Boolean).join("\n");
+
+  const url = `https://wa.me/?text=${encodeURIComponent(lines)}`;
+
+  return (
+    <a href={url} target="_blank" rel="noopener noreferrer"
+      style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,
+              background:"#25D366",color:"white",borderRadius:14,padding:"12px 18px",
+              textDecoration:"none",marginBottom:14,
+              fontFamily:"'Barlow Condensed',sans-serif",fontSize:18,
+              letterSpacing:"0.04em",fontWeight:900,
+              boxShadow:"0 4px 14px rgba(37,211,102,0.3)"}}>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+      </svg>
+      SHARE PROGRESS ON WHATSAPP
+    </a>
+  );
+}
+
 function ProgressTab({ player, checks, isAdmin }) {
   const [completions, setCompletions] = useState([]);
   const [loading, setLoading]         = useState(true);
@@ -1435,6 +1565,7 @@ function ProgressTab({ player, checks, isAdmin }) {
         )}
       </div>
 
+      <ShareProgressButton player={player} checks={checks} />
       <div style={{background:"white",borderRadius:14,padding:"14px",border:"1px solid #f0dede",width:"100%"}}>
         <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",letterSpacing:"0.04em",marginBottom:12}}>ACTIVITY LOG</div>
         {loading && <div style={{textAlign:"center",color:"var(--muted)",padding:"16px 0",fontSize:13}}>Loading…</div>}
@@ -1855,6 +1986,102 @@ function ResultsTable({ allPlayers, period, ptsMap = {} }) {
   );
 }
 
+
+
+function WAMessageGenerator({ allPlayers, ptsMap, squadLabel }) {
+  const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const currentWeek = Math.min(Math.max(Math.floor((new Date() - new Date("2026-06-29")) / (7*24*60*60*1000)) + 1, 1), 8);
+  const maxPossible = WEEKS.reduce((a,w) => a + weekMaxPts(w), 0);
+  const sorted = allPlayers.slice().sort((a,b) => (ptsMap[b.id]||0) - (ptsMap[a.id]||0));
+  const top3 = sorted.slice(0,3);
+  const totalSessions = Object.values(ptsMap).reduce((a,b) => a + Math.round(b / 2.5), 0);
+
+  const medals = ["🥇","🥈","🥉"];
+  const message = [
+    `🏑⚽ Fingallians ${squadLabel} – Challenge Update · Week ${currentWeek} of 8`,
+    ``,
+    `Leaderboard so far:`,
+    ...top3.map((p,i) => `${medals[i]} ${p.name} – ${ptsMap[p.id]||0} pts`),
+    sorted.length > 3 ? `...and ${sorted.length - 3} more girls logging sessions! 💪` : "",
+    ``,
+    `Keep it going girls — ${8 - currentWeek} weeks left! Log your runs, skills and squad sessions in the app to keep climbing the leaderboard. 🔥`,
+    ``,
+    `Fins Abú 🔴⚪️`,
+  ].filter(l => l !== undefined).join("
+");
+
+  function copy() {
+    navigator.clipboard.writeText(message).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  }
+
+  return (
+    <div style={{background:"white",borderRadius:14,padding:"14px",border:"1px solid #f0dede",marginBottom:14}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:open?12:0}}>
+        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",letterSpacing:"0.04em"}}>📱 WHATSAPP UPDATE GENERATOR</div>
+        <button onClick={() => setOpen(v=>!v)}
+          style={{background:open?"#f0dede":"var(--g)",color:open?"var(--g)":"white",border:"none",borderRadius:8,
+                  padding:"5px 12px",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",fontSize:13,fontWeight:700}}>
+          {open ? "Close" : "Generate"}
+        </button>
+      </div>
+      {open && (
+        <>
+          <div style={{background:"#f9f9f9",borderRadius:10,padding:"12px 14px",fontSize:13,
+                       lineHeight:1.7,color:"var(--dark)",whiteSpace:"pre-wrap",
+                       border:"1px solid #eee",marginBottom:10,fontFamily:"'Lato',sans-serif"}}>
+            {message}
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={copy}
+              style={{flex:1,background:copied?"#2e7d32":"var(--g)",color:"white",border:"none",borderRadius:10,
+                      padding:"10px",cursor:"pointer",fontFamily:"'Barlow Condensed',sans-serif",
+                      fontSize:16,letterSpacing:"0.04em",fontWeight:700,transition:"background 0.2s"}}>
+              {copied ? "✅ Copied!" : "📋 Copy Message"}
+            </button>
+            <a href={`https://wa.me/?text=${encodeURIComponent(message)}`} target="_blank" rel="noopener noreferrer"
+              style={{flex:1,display:"flex",alignItems:"center",justifyContent:"center",gap:6,
+                      background:"#25D366",color:"white",borderRadius:10,padding:"10px",
+                      textDecoration:"none",fontFamily:"'Barlow Condensed',sans-serif",
+                      fontSize:16,letterSpacing:"0.04em",fontWeight:700}}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+              Open in WA
+            </a>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function downloadCSV(allPlayers, ptsMap, weeklyMap) {
+  const maxPossible = WEEKS.reduce((a,w) => a + weekMaxPts(w), 0);
+  const headers = ["Player", "Total Points", "Max Possible", "Pct Complete", ...WEEKS.map(w => `Week ${w.week}`)];
+  const rows = allPlayers
+    .slice()
+    .sort((a,b) => (ptsMap[b.id]||0) - (ptsMap[a.id]||0))
+    .map(p => {
+      const pts = ptsMap[p.id] || 0;
+      const pct = Math.round((pts / maxPossible) * 100);
+      const weekCols = WEEKS.map(w => weeklyMap[p.id]?.[w.week] || 0);
+      return [p.name, pts, maxPossible, `${pct}%`, ...weekCols];
+    });
+  const csv = [headers, ...rows].map(r => r.map(v => `"${v}"`).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href = url;
+  a.download = `fingallians-challenge-${SQUAD_SHORT.replace(" ","-").toLowerCase()}-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function DashboardTab({ allPlayers, squadLabel, squadFilter = SQUAD }) {
   const [stats,      setStats]      = useState(null);
   const [loading,    setLoading]    = useState(true);
@@ -1953,6 +2180,15 @@ function DashboardTab({ allPlayers, squadLabel, squadFilter = SQUAD }) {
           ))}
         </div>
 
+        <WAMessageGenerator allPlayers={allPlayers} ptsMap={ptsMap} squadLabel={squadLabel} />
+        <div style={{display:"flex",justifyContent:"flex-end",marginBottom:10}}>
+          <button onClick={() => downloadCSV(allPlayers, ptsMap, weeklyMap)}
+            style={{display:"inline-flex",alignItems:"center",gap:6,background:"#2e7d32",color:"white",
+                    border:"none",borderRadius:10,padding:"8px 16px",cursor:"pointer",
+                    fontFamily:"'Barlow Condensed',sans-serif",fontSize:15,letterSpacing:"0.04em",fontWeight:700}}>
+            📥 Export CSV
+          </button>
+        </div>
         <div style={{background:"white",borderRadius:14,padding:"14px",border:"1px solid #f0dede",marginBottom:14}}>
           <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",letterSpacing:"0.04em",marginBottom:10}}>LEADERBOARD</div>
           {sortedPlayers.map((p,i)=>{
