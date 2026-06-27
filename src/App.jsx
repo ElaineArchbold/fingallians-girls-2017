@@ -2009,8 +2009,7 @@ function WAMessageGenerator({ allPlayers, ptsMap, squadLabel }) {
     `Keep it going girls — ${8 - currentWeek} weeks left! Log your runs, skills and squad sessions in the app to keep climbing the leaderboard. 🔥`,
     ``,
     `Fins Abú 🔴⚪️`,
-  ].filter(l => l !== undefined).join("
-");
+  ].filter(Boolean).join("\n");
 
   function copy() {
     navigator.clipboard.writeText(message).then(() => {
