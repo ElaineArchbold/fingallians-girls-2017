@@ -746,9 +746,12 @@ function AuthScreen({ showToast }) {
       <div className="auth-wrap">
         <div className="auth-hero">
           <div className="crest-large"><img src={LOGO} alt="Fingallians GAA" /></div>
-        <img src={CHALLENGE_LOGO} alt="Summer Fitness Challenge 2026"
-          style={{width:120,height:120,objectFit:"contain",margin:"0 auto 8px",display:"block",
-                  filter:"drop-shadow(0 4px 12px rgba(0,0,0,0.4))"}} />
+        <div style={{width:120,height:120,borderRadius:"50%",background:"white",
+                    border:"3px solid var(--gold)",boxShadow:"0 4px 16px rgba(0,0,0,0.3)",
+                    margin:"0 auto 8px",display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
+          <img src={CHALLENGE_LOGO} alt="Summer Fitness Challenge 2026"
+            style={{width:"90%",height:"90%",objectFit:"contain"}} />
+        </div>
           <h2>SUMMER FITNESS CHALLENGE</h2>
           <p>{SQUAD_LABEL} · June–August 2026 · 8 Weeks<br/>Runs · Skills · Squad Sessions</p>
         </div>
@@ -1049,8 +1052,12 @@ function HomeTab({ player, checks, pts, weeksDone, onNav, onToggle, showToast })
       <div className="welcome-card">
       {/* Challenge logo badge */}
       <div style={{display:"flex",justifyContent:"center",marginBottom:8}}>
-        <img src={CHALLENGE_LOGO} alt="Fingallians Summer Fitness Challenge 2026"
-          style={{width:130,height:130,objectFit:"contain",filter:"drop-shadow(0 4px 12px rgba(0,0,0,0.35))"}} />
+        <div style={{width:130,height:130,borderRadius:"50%",background:"white",
+                    border:"3px solid var(--gold)",boxShadow:"0 4px 16px rgba(0,0,0,0.3)",
+                    display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
+          <img src={CHALLENGE_LOGO} alt="Fingallians Summer Fitness Challenge 2026"
+            style={{width:"90%",height:"90%",objectFit:"contain"}} />
+        </div>
       </div>
         <h2>SUMMER CHALLENGE</h2>
         {player && <div className="player-name">👤 {player.name}</div>}
