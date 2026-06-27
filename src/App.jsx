@@ -471,6 +471,91 @@ function Confetti({ trigger }) {
   );
 }
 
+
+function TCReacceptModal({ userEmail, onAccepted }) {
+  const [ticked, setTicked] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  async function handleAccept() {
+    if (!ticked) return;
+    setSaving(true);
+    try { localStorage.setItem("tcVersion", "v2"); } catch(e) {}
+    try {
+      await sb.from("audit_log").insert({
+        user_email: userEmail,
+        player_id: null,
+        player_name: null,
+        action: "tc_agreed_at_signup",
+        detail: "User agreed to updated Terms & Conditions (v2 — includes WhatsApp, photography, coaching group disclaimer)",
+        squad: null,
+        old_value: null,
+        new_value: new Date().toISOString(),
+      });
+    } catch(e) {}
+    setSaving(false);
+    onAccepted();
+  }
+
+  return (
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.85)",zIndex:10001,
+                 display:"flex",alignItems:"center",justifyContent:"center",padding:"16px"}}>
+      <div style={{background:"white",borderRadius:20,padding:"24px 20px",
+                   width:"100%",maxWidth:520,maxHeight:"90vh",overflowY:"auto",
+                   boxShadow:"0 8px 40px rgba(0,0,0,0.4)"}}>
+        <div style={{textAlign:"center",marginBottom:16}}>
+          <div style={{fontSize:36,marginBottom:8}}>📋</div>
+          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:24,
+                       color:"var(--g)",letterSpacing:"0.02em",marginBottom:4}}>
+            UPDATED TERMS & CONDITIONS
+          </div>
+          <p style={{fontSize:13,color:"var(--muted)",lineHeight:1.5}}>
+            We've updated our terms before the challenge kicks off. Please read and agree to continue.
+          </p>
+        </div>
+
+        <div style={{background:"#f9f0f0",borderRadius:12,padding:"14px 16px",marginBottom:16,
+                     display:"flex",flexDirection:"column",gap:12}}>
+          {[
+            ["Exercise Guidelines", "Activities are guidelines only. Never push through pain or discomfort. Fingallians GAA accepts no liability for injury."],
+            ["Data & Privacy", "We store your child's name and your email address only. Data is not shared with any third party and is used solely for this challenge."],
+            ["Participation", "This challenge is run voluntarily by Fingallians coaches in a personal capacity. It is not an official Fingallians GAA Club programme. The club accepts no responsibility for its operation."],
+            ["WhatsApp Group", "By joining the optional WhatsApp group your phone number will be visible to all group members. Only share content you are comfortable with the full group seeing. Do not share photos or videos of other children without parental consent."],
+            ["Photography & Video", "By posting content to the WhatsApp group you confirm you have obtained consent from the parent or guardian of any child appearing in that content."],
+            ["Age & Supervision", "This app is for use by parents and guardians on behalf of their child. All physical activities should be appropriately supervised."],
+            ["Medical & Fitness", "Activities do not constitute professional medical or fitness advice. Consult a healthcare professional if your child has any medical condition or injury."],
+          ].map(([title, text]) => (
+            <div key={title}>
+              <div style={{fontSize:11,fontWeight:900,textTransform:"uppercase",
+                           letterSpacing:"0.07em",color:"var(--mid)",marginBottom:3}}>{title}</div>
+              <p style={{fontSize:12,color:"var(--mid)",lineHeight:1.6}}>{text}</p>
+            </div>
+          ))}
+        </div>
+
+        <label style={{display:"flex",alignItems:"flex-start",gap:12,cursor:"pointer",
+                       padding:"12px 14px",background:"#f0f7ff",borderRadius:10,
+                       border:"1px solid #c5d8f0",marginBottom:14}}>
+          <input type="checkbox" checked={ticked} onChange={e => setTicked(e.target.checked)}
+            style={{width:20,height:20,accentColor:"var(--g)",flexShrink:0,marginTop:1,cursor:"pointer"}} />
+          <span style={{fontSize:13,color:"var(--dark)",lineHeight:1.5,fontWeight:600}}>
+            I have read and agree to the Terms & Conditions above. I confirm I am the parent or guardian of the player I am registering.
+          </span>
+        </label>
+
+        <button onClick={handleAccept} disabled={!ticked || saving}
+          style={{width:"100%",padding:"14px",border:"none",borderRadius:12,
+                  cursor:ticked&&!saving?"pointer":"not-allowed",
+                  fontFamily:"'Barlow Condensed',sans-serif",fontSize:20,
+                  letterSpacing:"0.04em",fontWeight:900,
+                  background:ticked&&!saving?"var(--g)":"#ccc",
+                  color:"white",transition:"background 0.2s"}}>
+          {saving ? "Saving…" : "AGREE & CONTINUE →"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [session, setSession]   = useState(null);
   const [loading, setLoading]   = useState(true);
@@ -482,6 +567,7 @@ export default function App() {
   const [playerLoaded, setPlayerLoaded] = useState(false);
   const [confettiTrigger, setConfettiTrigger] = useState(0);
   const [waConsent, setWaConsent] = useState(() => { try { return localStorage.getItem("waConsent") === "true"; } catch { return false; } });
+  const [tcAccepted, setTcAccepted] = useState(() => { try { return localStorage.getItem("tcVersion") === "v2"; } catch { return false; } });
   // SuperAdmin can toggle between squads
   const [adminSquadView, setAdminSquadView] = useState(SQUAD);
 
@@ -694,6 +780,9 @@ export default function App() {
       </div>
       {toast && <div className="toast">{toast}</div>}
       <Confetti trigger={confettiTrigger} />
+      {session && !tcAccepted && (
+        <TCReacceptModal userEmail={session.user.email} onAccepted={() => setTcAccepted(true)} />
+      )}
     </>
   );
 }
@@ -2352,6 +2441,7 @@ function DashboardTab({ allPlayers, squadLabel, squadFilter = SQUAD }) {
 
   const actionStyle = {
     tc_agreed_at_signup: { icon:"📋", color:"#1565c0", bg:"#e3f2fd", label:"Agreed to T&Cs"    },
+    tc_reaccepted:       { icon:"📋", color:"#1565c0", bg:"#e3f2fd", label:"T&Cs re-agreed (v2)"  },
     wa_consent_given:    { icon:"💬", color:"#25a244", bg:"#e8f5e9", label:"WhatsApp consent"  },
     task_complete:       { icon:"✅", color:"#2e7d32", bg:"#e8f5e9",  label:"Marked complete"   },
     task_incomplete: { icon:"↩️", color:"#e65100", bg:"#fff3e0",  label:"Marked incomplete" },
