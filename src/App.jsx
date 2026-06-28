@@ -437,9 +437,6 @@ select.inp{appearance:none;cursor:pointer}
 .tc-check-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;cursor:pointer}
 .tc-check-row input[type="checkbox"]{width:18px;height:18px;accent-color:var(--g);flex-shrink:0;margin-top:1px;cursor:pointer}
 .tc-check-row span{font-size:13px;color:var(--mid);line-height:1.5}
-.squad-toggle{display:flex;gap:8px;margin-bottom:14px;align-items:center}
-.squad-toggle-btn{padding:6px 14px;border-radius:20px;border:2px solid var(--g);background:white;color:var(--g);font-family:'Barlow Condensed',sans-serif;font-size:14px;cursor:pointer;font-weight:700;transition:all 0.15s}
-.squad-toggle-btn.active{background:var(--g);color:white}
 `;
 
 
@@ -568,8 +565,6 @@ export default function App() {
   const [confettiTrigger, setConfettiTrigger] = useState(0);
   const [waConsent, setWaConsent] = useState(() => { try { return localStorage.getItem(`waConsent:${SQUAD}:v2`) === "true"; } catch { return false; } });
   const [tcAccepted, setTcAccepted] = useState(() => { try { return localStorage.getItem(`tcVersion:${SQUAD}`) === "v2"; } catch { return false; } });
-  // SuperAdmin can toggle between squads
-  const [adminSquadView, setAdminSquadView] = useState(SQUAD);
 
   const showToast = useCallback((msg) => {
     setToast(msg);
@@ -587,17 +582,10 @@ export default function App() {
 
   useEffect(() => {
     if (!session) { setPlayer(null); setChecks({}); setPlayerLoaded(false); return; }
-    if (ADMIN_EMAILS.includes(session.user.email)) { setPlayerLoaded(true); loadAllPlayers(adminSquadView); return; }
+    if (ADMIN_EMAILS.includes(session.user.email)) { setPlayerLoaded(true); loadAllPlayers(SQUAD); return; }
     setPlayerLoaded(false);
     loadPlayerData();
   }, [session]);
-
-  // Reload players when superadmin switches squad view
-  useEffect(() => {
-    if (session && ADMIN_EMAILS.includes(session.user.email)) {
-      loadAllPlayers(adminSquadView);
-    }
-  }, [adminSquadView]);
 
   async function loadPlayerData() {
     try {
@@ -713,7 +701,7 @@ export default function App() {
   }
 
   const isAdmin      = ADMIN_EMAILS.includes(session?.user?.email);
-  const isSuperAdmin = session?.user?.email === SUPER_ADMIN_EMAIL;
+  const isSuperAdmin = isAdmin;
   const pts     = totalPts(checks);
   const weeksDone = WEEKS.filter(w => weekPts(w, checks) === weekMaxPts(w)).length;
 
@@ -729,19 +717,6 @@ export default function App() {
     ...(isSuperAdmin ? [{ id:"admin",   label:"Admin"   }] : []),
     ...(isSuperAdmin ? [{ id:"dashboard", label:"Dashboard" }] : []),
   ];
-
-  // SuperAdmin squad toggle component
-  const SuperAdminSquadToggle = () => isSuperAdmin ? (
-    <div className="squad-toggle">
-      <span style={{fontSize:12,color:"var(--muted)",fontWeight:700}}>Squad:</span>
-      {["2015","2017"].map(s => (
-        <button key={s} className={`squad-toggle-btn${adminSquadView===s?" active":""}`}
-          onClick={() => setAdminSquadView(s)}>
-          {s === "2015" ? "2015 Girls" : "2017 Girls"}
-        </button>
-      ))}
-    </div>
-  ) : null;
 
   return (
     <>
@@ -786,14 +761,14 @@ export default function App() {
 
         {session && isAdmin && tab === "admin" && (
           <div className="admin-wrap" style={{paddingTop:14}}>
-            <SuperAdminSquadToggle />
-            <AdminTab allPlayers={allPlayers} session={session} onRefresh={() => loadAllPlayers(adminSquadView)} showToast={showToast} currentSquad={adminSquadView} />
+            
+            <AdminTab allPlayers={allPlayers} session={session} onRefresh={() => loadAllPlayers(SQUAD)} showToast={showToast} currentSquad={SQUAD} />
           </div>
         )}
         {session && isSuperAdmin && tab === "dashboard" && (
           <div className="admin-wrap" style={{paddingTop:14}}>
-            <SuperAdminSquadToggle />
-            <DashboardTab allPlayers={allPlayers} squadLabel={adminSquadView === "2017" ? "2017 Girls" : "2015 Girls"} />
+            
+            <DashboardTab allPlayers={allPlayers} squadLabel={SQUAD === "2017" ? "2017 Girls" : "2015 Girls"} />
           </div>
         )}
       </div>
@@ -1216,7 +1191,7 @@ function WAConsentButton({ waConsent, setWaConsent, player, userEmail }) {
       setSaving(true);
       await recordWhatsAppConsent();
       setSaving(false);
-      window.location.href = WHATSAPP_LINK;
+      window.open(WHATSAPP_LINK, "_blank", "noopener,noreferrer");
     } else {
       setTicked(false);
       setShowModal(true);
@@ -1235,7 +1210,7 @@ function WAConsentButton({ waConsent, setWaConsent, player, userEmail }) {
     setWaConsent(true);
     setSaving(false);
     setShowModal(false);
-    window.location.href = WHATSAPP_LINK;
+    window.open(WHATSAPP_LINK, "_blank", "noopener,noreferrer");
   }
 
   return (
