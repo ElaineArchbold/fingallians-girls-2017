@@ -10,7 +10,7 @@ const WHATSAPP_2015     = "https://chat.whatsapp.com/Bc76P9R4TJvHbbdQ2xEhhA";
 const WHATSAPP_2017     = "https://chat.whatsapp.com/CUeI5EKF8HOGo0hucgSEPF";
 
 // ── Squad config ─────────────────────────────────────────────────────────────
-const SQUAD = "2015";
+const SQUAD = "2017";
 const WHATSAPP_LINK = SQUAD === "2017" ? WHATSAPP_2017 : WHATSAPP_2015;
 const SQUAD_LABEL = SQUAD === "2017" ? "Fingallians 2017 Girls" : "Fingallians 2015 Girls";
 const SQUAD_SHORT = SQUAD === "2017" ? "2017 Girls" : "2015 Girls";
