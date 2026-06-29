@@ -14,6 +14,7 @@ const SQUAD = "2017";
 const WHATSAPP_LINK = SQUAD === "2017" ? WHATSAPP_2017 : WHATSAPP_2015;
 const SQUAD_LABEL = SQUAD === "2017" ? "Fingallians 2017 Girls" : "Fingallians 2015 Girls";
 const SQUAD_SHORT = SQUAD === "2017" ? "2017 Girls" : "2015 Girls";
+const CONSENT_SQUAD_KEY = SQUAD_SHORT;
 
 const ADMIN_EMAILS = [
   "e.t.archbold@gmail.com",
@@ -749,7 +750,7 @@ export default function App() {
   const [allPlayers, setAllPlayers] = useState([]);
   const [playerLoaded, setPlayerLoaded] = useState(false);
   const [confettiTrigger, setConfettiTrigger] = useState(0);
-  const [waConsent, setWaConsent] = useState(() => { try { return localStorage.getItem(`waConsent:${SQUAD}:v2`) === "true"; } catch { return false; } });
+  const [waConsent, setWaConsent] = useState(() => { try { return localStorage.getItem(`waConsent:${CONSENT_SQUAD_KEY}:v2`) === "true"; } catch { return false; } });
   const [tcAccepted, setTcAccepted] = useState(() => { try { return localStorage.getItem(`tcVersion:${SQUAD}`) === "v2"; } catch { return false; } });
 
   const showToast = useCallback((msg) => {
@@ -1434,7 +1435,7 @@ function WAConsentButton({ waConsent, setWaConsent, player, userEmail }) {
         .from("audit_log")
         .select("id")
         .eq("action", "wa_consent_given")
-        .eq("squad", SQUAD)
+        .eq("squad", CONSENT_SQUAD_KEY)
         .limit(1);
 
       if (email) q = q.eq("user_email", email);
@@ -1450,7 +1451,7 @@ function WAConsentButton({ waConsent, setWaConsent, player, userEmail }) {
           player_name: player?.name || null,
           action:      "wa_consent_given",
           detail:      "User agreed to WhatsApp group T&Cs and joined the group",
-          squad:       SQUAD,
+          squad:       CONSENT_SQUAD_KEY,
           old_value:   null,
           new_value:   new Date().toISOString(),
         });
@@ -1478,7 +1479,7 @@ function WAConsentButton({ waConsent, setWaConsent, player, userEmail }) {
 
     setSaving(true);
     try {
-      localStorage.setItem(`waConsent:${SQUAD}:v2`, "true");
+      localStorage.setItem(`waConsent:${CONSENT_SQUAD_KEY}:v2`, "true");
     } catch(e) {}
 
     await recordWhatsAppConsent();
