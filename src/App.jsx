@@ -477,19 +477,7 @@ function TCReacceptModal({ userEmail, onAccepted }) {
   async function handleAccept() {
     if (!ticked) return;
     setSaving(true);
-    try { localStorage.setItem(`tcVersion:${SQUAD}`, "v2"); } catch(e) {}
-    try {
-      await sb.from("audit_log").insert({
-        user_email: userEmail,
-        player_id: null,
-        player_name: null,
-        action: "tc_agreed_at_signup",
-        detail: "User agreed to updated Terms & Conditions (v2 — includes WhatsApp, photography, coaching group disclaimer)",
-        squad: null,
-        old_value: null,
-        new_value: new Date().toISOString(),
-      });
-    } catch(e) {}
+    try { localStorage.setItem(`tcVersion:${CONSENT_SQUAD_KEY}`, "v2"); } catch(e) {}
     setSaving(false);
     onAccepted();
   }
@@ -751,7 +739,7 @@ export default function App() {
   const [playerLoaded, setPlayerLoaded] = useState(false);
   const [confettiTrigger, setConfettiTrigger] = useState(0);
   const [waConsent, setWaConsent] = useState(() => { try { return localStorage.getItem(`waConsent:${CONSENT_SQUAD_KEY}:v2`) === "true"; } catch { return false; } });
-  const [tcAccepted, setTcAccepted] = useState(() => { try { return localStorage.getItem(`tcVersion:${SQUAD}`) === "v2"; } catch { return false; } });
+  const [tcAccepted, setTcAccepted] = useState(() => { try { return localStorage.getItem(`tcVersion:${CONSENT_SQUAD_KEY}`) === "v2"; } catch { return false; } });
 
   const showToast = useCallback((msg) => {
     setToast(msg);
@@ -1093,19 +1081,6 @@ function AuthScreen({ showToast }) {
       const { error } = await sb.auth.signUp({ email, password: pw, options: { emailRedirectTo: redirectUrl } });
       if (error) { setErr(error.message); setBusy(false); return; }
       setSignedUpEmail(email);
-      // Log T&Cs agreement
-      try {
-        await sb.from("audit_log").insert({
-          user_email: email,
-          player_id: null,
-          player_name: null,
-          action: "tc_agreed_at_signup",
-          detail: "User agreed to Terms & Conditions at account creation",
-          squad: null,
-          old_value: null,
-          new_value: new Date().toISOString(),
-        });
-      } catch(_) {}
       setMode("verify");
     } else {
       const { error } = await sb.auth.signInWithPassword({ email, password: pw });
@@ -2618,13 +2593,12 @@ function ConsentLog() {
   useEffect(() => {
     sb.from("audit_log")
       .select("user_email,player_name,action,detail,created_at,squad")
-      .in("action", ["tc_agreed_at_signup","wa_consent_given","whatsapp_consent","whatsapp_consent_given","wa_joined"])
-      .or(`squad.eq.${SQUAD},squad.is.null`)
+      .in("action", ["wa_consent_given","whatsapp_consent","whatsapp_consent_given","wa_joined"])
+      .eq("squad", CONSENT_SQUAD_KEY)
       .order("created_at", { ascending: false })
-      .then(({ data }) => { setRecords((data || []).filter(r => !r.squad || r.squad === SQUAD)); setLoading(false); });
+      .then(({ data }) => { setRecords(data || []); setLoading(false); });
   }, []);
 
-  const tcCount = records.filter(r => r.action === "tc_agreed_at_signup").length;
   const waCount = records.filter(r => ["wa_consent_given","whatsapp_consent","whatsapp_consent_given","wa_joined"].includes(r.action)).length;
 
   return (
@@ -2632,11 +2606,7 @@ function ConsentLog() {
       <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",letterSpacing:"0.04em",marginBottom:14}}>
         CONSENT LOG
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
-        <div style={{background:"#e3f2fd",borderRadius:12,padding:"12px 14px",textAlign:"center"}}>
-          <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:32,color:"#1565c0"}}>{tcCount}</div>
-          <div style={{fontSize:11,color:"#1565c0",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",marginTop:2}}>📋 T&Cs Agreed</div>
-        </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr",gap:10,marginBottom:16}}>
         <div style={{background:"#e8f5e9",borderRadius:12,padding:"12px 14px",textAlign:"center"}}>
           <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:32,color:"#25a244"}}>{waCount}</div>
           <div style={{fontSize:11,color:"#25a244",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",marginTop:2}}>💬 WhatsApp Consent</div>
@@ -2647,11 +2617,10 @@ function ConsentLog() {
         <div style={{textAlign:"center",color:"var(--muted)",padding:"16px 0",fontSize:13}}>No consent records yet</div>
       )}
       {!loading && records.map((r, i) => {
-        const isTc = r.action === "tc_agreed_at_signup";
-        const color = isTc ? "#1565c0" : "#25a244";
-        const bg    = isTc ? "#e3f2fd" : "#e8f5e9";
-        const icon  = isTc ? "📋" : "💬";
-        const label = isTc ? "T&Cs at signup" : "WhatsApp consent";
+        const color = "#25a244";
+        const bg    = "#e8f5e9";
+        const icon  = "💬";
+        const label = "WhatsApp consent";
         const fullDate = r.created_at ? new Date(r.created_at).toLocaleString("en-IE", {
           day:"numeric", month:"short", year:"numeric",
           hour:"2-digit", minute:"2-digit"
