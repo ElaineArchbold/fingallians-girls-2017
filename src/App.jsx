@@ -674,15 +674,7 @@ export default function App() {
 
       const newChecks = { ...checks, [taskKey]: true };
       setChecks(newChecks);
-      // Fire confetti if week is now fully complete
-      const weekMatch2 = taskKey.match(/^w(\d+)-/);
-      if (weekMatch2) {
-        const wNum = parseInt(weekMatch2[1], 10);
-        const wData = WEEKS.find(w => w.week === wNum);
-        if (wData && weekPts(wData, newChecks) === weekMaxPts(wData)) {
-          setConfettiTrigger(t => t + 1);
-        }
-      }
+      setConfettiTrigger(t => t + 1);
       showToast(`✅ ${label} logged! +${pts} pts`);
       logAudit(session.user.email, player, "task_complete", label, null, `+${pts} pts`);
     }
@@ -1503,7 +1495,7 @@ function WeekDetail({ w, ps, pct, wPts, wMax, checks, onToggle, player, showToas
             {expandedSquad && (
               <div className="squad-body">
                 <p className="squad-desc">{w.squad.desc}</p>
-                <div className="squad-cta">👥 Get 3–4 girls together — this is your highest scoring task!</div>
+                <div className="squad-cta">👥 Get 3–4 girls together — squad sessions earn extra points! Don’t forget to send photos or short videos of your squad session to the WhatsApp group to claim the bonus.</div>
                 {/* Three drill videos for this week */}
                 <div style={{display:"flex",gap:8,marginBottom:12}}>
                   {[
@@ -2733,4 +2725,3 @@ function AdminTab({ allPlayers, onRefresh, showToast, currentSquad }) {
     </div>
   );
 }
-
