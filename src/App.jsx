@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { createClient } from "@supabase/supabase-js";
 
@@ -478,8 +477,8 @@ body{font-family:'Lato',sans-serif;background:var(--bg);color:var(--dark);min-he
 .wk-hero-hd h2{font-family:'Barlow Condensed',sans-serif;font-size:28px;letter-spacing:0.02em}
 .wk-hero-hd .sport-badge{font-size:13px;font-weight:700;margin-top:4px}
 .wk-hero-hd .wk-dates{font-size:12px;opacity:0.65;margin-top:2px}
-.runs-chips{display:flex;flex-wrap:nowrap;gap:6px;margin-top:10px;justify-content:center;width:100%}
-.run-chip{font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;background:rgba(0,0,0,0.08);cursor:pointer;transition:all 0.15s;border:2px solid transparent;flex:1;text-align:center;white-space:nowrap;min-width:0}
+.runs-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;justify-content:center;width:100%}
+.run-chip{font-size:12px;font-weight:800;padding:8px 10px;border-radius:18px;background:rgba(0,0,0,0.08);cursor:pointer;transition:all 0.15s;border:2px solid transparent;flex:1 1 calc(33.333% - 6px);text-align:center;white-space:normal;min-width:88px;min-height:46px;display:flex;align-items:center;justify-content:center;line-height:1.2;overflow-wrap:anywhere;word-break:normal}
 .run-chip.done{background:var(--g);color:white;border-color:var(--g)}
 .run-chip:hover:not(.done){background:rgba(0,0,0,0.14)}
 .prog-bar-bg{height:6px;background:#f0dede;border-radius:3px;overflow:hidden;margin:12px 18px 4px}
@@ -1999,14 +1998,9 @@ function WeekDetail({ w, ps, pct, wPts, wMax, checks, onToggle, player, showToas
               const done = isApproved(checks[k]);
               return (
                 <div key={i} className={`run-chip${done?" done":""}`}
-                  style={{
-                    ...(!done?{background:ps.chip,color:ps.accent,borderColor:"transparent"}:{}),
-                    display:"block",textAlign:"left",lineHeight:1.25,padding:"9px 10px"
-                  }}
+                  style={!done?{background:ps.chip,color:ps.accent,borderColor:"transparent"}:{}}
                   onClick={()=>canToggle&&onToggle(k,PTS.run,`${r.icon || "✨"} ${r.label} (${r.distance})`)}>
-                  <div style={{fontWeight:900,fontSize:12}}>
-                    {r.icon || "✨"} {r.label}: {r.distance} {done?"✓":""}
-                  </div>
+                  <span>{r.icon || "✨"} {r.label}: {r.distance} {done?"✓":""}</span>
 
                 </div>
               );
