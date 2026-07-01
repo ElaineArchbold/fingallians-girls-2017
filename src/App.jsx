@@ -17,14 +17,21 @@ const APP_SQUAD         = "2017";
 const APP_SQUAD_LABEL   = "Fingallians 2017 Girls";
 const APP_SQUAD_SHORT   = "2017 Girls";
 const COACH_EMAIL       = "Fingallians2015GirlsChallenge@gmail.com";
-const CURRENT_TERMS_VERSION = "v2"; // Only change this when the actual Terms & Conditions change.
+const CURRENT_TERMS_VERSION = "v2"; // Do not change for app updates. Only change when the actual Terms & Conditions text materially changes.
 const CONSENT_START_DATE = "2026-06-26T00:00:00.000Z";
 
 // Admin accounts that should be auto-linked to a player by name
 const ADMIN_PLAYER_NAMES = { "lee@ssa.ie": "Rose Connolly" };
 const ADMIN_PLAYER_NAME = null;
 
-const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    storageKey: `fingallians-${APP_SQUAD.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-auth`,
+  },
+});
 
 // ── Audit logging helper ──────────────────────────────────────────────────────
 async function logAudit(userEmail, player, action, detail, oldValue = null, newValue = null) {
@@ -1013,7 +1020,13 @@ export default function App() {
       setSession(session);
       setLoading(false);
     });
-    const { data: { subscription } } = sb.auth.onAuthStateChange((_e, s) => setSession(s));
+    const { data: { subscription } } = sb.auth.onAuthStateChange((event, s) => {
+      if (event === "SIGNED_OUT") {
+        setSession(null);
+        return;
+      }
+      if (s) setSession(s);
+    });
     return () => subscription.unsubscribe();
   }, [isChildView]);
 
@@ -1104,18 +1117,33 @@ export default function App() {
 
   async function loadPlayerData() {
     try {
-      const { data: link } = await sb
+      // A parent/admin test email can be linked to one child per squad.
+      // Load all links for this Supabase auth user, then choose the child for this app's APP_SQUAD.
+      const { data: links, error: linkError } = await sb
         .from("parent_players")
         .select("player_id")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
-      if (link?.player_id) {
-        const { data: playerData } = await sb
+        .eq("user_id", session.user.id);
+
+      if (linkError) {
+        console.error("parent_players lookup failed:", linkError);
+      }
+
+      const playerIds = [...new Set((links || []).map(l => l.player_id).filter(Boolean))];
+
+      if (playerIds.length > 0) {
+        const { data: squadPlayers, error: playerError } = await sb
           .from("players")
           .select("id, name, squad, child_access_token")
-          .eq("id", link.player_id)
+          .in("id", playerIds)
           .eq("squad", APP_SQUAD)
-          .maybeSingle();
+          .order("name");
+
+        if (playerError) {
+          console.error("player lookup failed:", playerError);
+        }
+
+        const playerData = (squadPlayers || [])[0];
+
         if (playerData) {
           setPlayer(playerData);
           const { data: comps } = await sb
@@ -1128,10 +1156,18 @@ export default function App() {
             c[r.task_key] = r.status || "approved";
           });
           setChecks(c);
+        } else {
+          setPlayer(null);
+          setChecks({});
         }
+      } else {
+        setPlayer(null);
+        setChecks({});
       }
     } catch(e) {
       console.error("loadPlayerData error:", e);
+      setPlayer(null);
+      setChecks({});
     }
     setPlayerLoaded(true);
   }
@@ -1267,12 +1303,33 @@ export default function App() {
   }
   async function linkPlayer(playerId) {
     try {
-      await sb.from("parent_players")
-        .upsert({ user_id: session.user.id, player_id: playerId }, { onConflict: "user_id" });
+      // Keep one linked child per squad, without overwriting links for other apps/squads.
+      const { data: squadPlayers } = await sb
+        .from("players")
+        .select("id")
+        .eq("squad", APP_SQUAD);
+
+      const squadPlayerIds = (squadPlayers || []).map(p => p.id).filter(Boolean);
+
+      if (squadPlayerIds.length > 0) {
+        await sb
+          .from("parent_players")
+          .delete()
+          .eq("user_id", session.user.id)
+          .in("player_id", squadPlayerIds);
+      }
+
+      const { error } = await sb
+        .from("parent_players")
+        .insert({ user_id: session.user.id, player_id: playerId });
+
+      if (error) throw error;
+
       showToast("🎉 Player linked! Loading your dashboard…");
-      setTimeout(() => window.location.reload(), 1500);
+      setTimeout(() => window.location.reload(), 900);
     } catch(e) {
-      showToast("❌ Something went wrong — please try again.");
+      console.error("linkPlayer error:", e);
+      showToast("❌ Could not save that child link. Please check the parent_players SQL and try again.");
     }
   }
 
@@ -1430,7 +1487,7 @@ function AuthScreen({ showToast }) {
       setMode("verify");
     } else {
       const { error } = await sb.auth.signInWithPassword({ email, password: pw });
-      if (error) { setErr("Incorrect email or password. If you have just registered, make sure you have clicked the confirmation link in your email first."); setBusy(false); return; }
+      if (error) { setErr("Incorrect email or password. Please try again."); setBusy(false); return; }
     }
     setBusy(false);
   }
@@ -1592,8 +1649,8 @@ function LinkPlayerScreen({ onLink }) {
     <div className="auth-wrap">
       <div className="card">
         <div className="card-hd">
-          <h3>Link Your Daughter</h3>
-          <p>Select your daughter from the list below to get started</p>
+          <h3>Please select your child</h3>
+          <p>Please select your child from the list below to get started.</p>
         </div>
         <div className="card-bd">
           {loading ? <div className="loader"><div className="spinner"/>Loading players…</div> : (
@@ -1606,14 +1663,14 @@ function LinkPlayerScreen({ onLink }) {
               <>
                 <label className="lbl">Select Player</label>
                 <select className="inp" value={selected} onChange={e=>setSelected(e.target.value)}>
-                  <option value="">— Choose your daughter —</option>
+                  <option value="">— Please select your child —</option>
                   {players.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                 </select>
                 <button className="btn btn-green" onClick={()=>selected&&onLink(selected)} disabled={!selected}>
                   CONFIRM & CONTINUE
                 </button>
                 <p style={{fontSize:12,color:"var(--muted)",marginTop:12,textAlign:"center"}}>
-                  Cannot see your daughter's name? Message the coaches — they'll add her to the list.
+                  Can't see your child's name? Please contact the coaches and they'll add them for you.
                 </p>
               </>
             )
