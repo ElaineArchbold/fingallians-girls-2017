@@ -70,9 +70,9 @@ const WEEKS = [
   {
     week:1, phase:"Foundation", dates:"Jun 29–Jul 5",
     runs:[
-      {label:"Star Jumps",distance:"50 reps",icon:"⭐",desc:"Complete the target number of star jumps with soft landings and a steady rhythm."},
-      {label:"Star Jumps",distance:"100 reps",icon:"⭐",desc:"Complete the target number of star jumps with soft landings and a steady rhythm."},
-      {label:"Star Jumps",distance:"150 reps",icon:"⭐",desc:"Complete the target number of star jumps with soft landings and a steady rhythm."}
+      {label:"Star Jumps",distance:"50 reps",icon:"⭐",desc:"Complete the target for star jumps."},
+      {label:"Lunges",distance:"25 reps",icon:"🦵",desc:"Complete the target for lunges."},
+      {label:"Football Solos",distance:"50",icon:"⚽",desc:"Complete the target for football solos."}
     ],
     speed:[{id:"s1a",label:"⚡ Fall Forward",desc:"Lean forward from your ankles like you're about to fall — then let your legs catch you! Practice for 10 minutes. This is how fast runners start. Learn the name: Fall Forward!",youtube_id:"PTmWJ4kk0yE"}],
     skills:[
@@ -84,9 +84,9 @@ const WEEKS = [
   {
     week:2, phase:"Foundation", dates:"Jul 6–12",
     runs:[
-      {label:"Lunges",distance:"50 reps",icon:"🦵",desc:"Step forward into each lunge with control, then push back to standing."},
-      {label:"Lunges",distance:"100 reps",icon:"🦵",desc:"Step forward into each lunge with control, then push back to standing."},
-      {label:"Lunges",distance:"150 reps",icon:"🦵",desc:"Step forward into each lunge with control, then push back to standing."}
+      {label:"Star Jumps",distance:"75 reps",icon:"⭐",desc:"Complete the target for star jumps."},
+      {label:"Lunges",distance:"40 reps",icon:"🦵",desc:"Complete the target for lunges."},
+      {label:"Football Solos",distance:"75",icon:"⚽",desc:"Complete the target for football solos."}
     ],
     speed:[{id:"s2a",label:"⚡ Stationary Arm Swing",desc:"Stand still and swing your arms like you're running — keep your elbows bent. Arms help your legs go faster! Practice for 10 minutes. Learn the name: Stationary Arm Swing!",youtube_id:"NUmUwXqG1pE"}],
     skills:[
@@ -98,9 +98,9 @@ const WEEKS = [
   {
     week:3, phase:"Building", dates:"Jul 13–19",
     runs:[
-      {label:"Squats",distance:"50 reps",icon:"💪",desc:"Keep your chest up, bend your knees, and stand tall after each squat."},
-      {label:"Squats",distance:"100 reps",icon:"💪",desc:"Keep your chest up, bend your knees, and stand tall after each squat."},
-      {label:"Squats",distance:"150 reps",icon:"💪",desc:"Keep your chest up, bend your knees, and stand tall after each squat."}
+      {label:"Star Jumps",distance:"100 reps",icon:"⭐",desc:"Complete the target for star jumps."},
+      {label:"Lunges",distance:"50 reps",icon:"🦵",desc:"Complete the target for lunges."},
+      {label:"Football Solos",distance:"100",icon:"⚽",desc:"Complete the target for football solos."}
     ],
     speed:[{id:"s3a",label:"⚡ A Skip",desc:"Skip with high knees in a rhythm — left, right, left, right. It looks funny but it makes you faster! Practice for 10 minutes. Learn the name: A Skip!",youtube_id:"2I4rDiFs6Ec"}],
     skills:[
@@ -112,9 +112,9 @@ const WEEKS = [
   {
     week:4, phase:"Building", dates:"Jul 20–26",
     runs:[
-      {label:"Football Solos",distance:"50",icon:"⚽",desc:"Solo the football for the target number, keeping control as you move."},
-      {label:"Football Solos",distance:"100",icon:"⚽",desc:"Solo the football for the target number, keeping control as you move."},
-      {label:"Football Solos",distance:"150",icon:"⚽",desc:"Solo the football for the target number, keeping control as you move."}
+      {label:"Star Jumps",distance:"125 reps",icon:"⭐",desc:"Complete the target for star jumps."},
+      {label:"Squats",distance:"40 reps",icon:"💪",desc:"Complete the target for squats."},
+      {label:"Football Solos (Each Foot)",distance:"40",icon:"⚽",desc:"Complete the target for football solos (each foot)."}
     ],
     speed:[{id:"s4a",label:"⚡ Ankling Drill",desc:"Super fast tiny steps — stay low and keep your feet moving quickly off the ground. Practice for 10 minutes. Learn the name: Ankling Drill!",youtube_id:"11xHsMcomf4"}],
     skills:[
@@ -126,9 +126,9 @@ const WEEKS = [
   {
     week:5, phase:"Push", dates:"Jul 27–Aug 2",
     runs:[
-      {label:"Walking Solos",distance:"50",icon:"🚶",desc:"Walk while soloing the football, keeping it close and controlled."},
-      {label:"Walking Solos",distance:"100",icon:"🚶",desc:"Walk while soloing the football, keeping it close and controlled."},
-      {label:"Walking Solos",distance:"150",icon:"🚶",desc:"Walk while soloing the football, keeping it close and controlled."}
+      {label:"Star Jumps",distance:"150 reps",icon:"⭐",desc:"Complete the target for star jumps."},
+      {label:"Squats",distance:"50 reps",icon:"💪",desc:"Complete the target for squats."},
+      {label:"Walking Solos",distance:"50",icon:"🚶",desc:"Complete the target for walking solos."}
     ],
     speed:[{id:"s5a",label:"⚡ A March",desc:"March with really high knees — lift them up as high as you can with every step. Practice for 10 minutes. Learn the name: A March!",youtube_id:"HISmA4pZWp0"}],
     skills:[
@@ -140,9 +140,9 @@ const WEEKS = [
   {
     week:6, phase:"Push", dates:"Aug 3–9",
     runs:[
-      {label:"Jogging Solos",distance:"50",icon:"🏃",desc:"Jog while soloing the football and try to keep a smooth rhythm."},
-      {label:"Jogging Solos",distance:"100",icon:"🏃",desc:"Jog while soloing the football and try to keep a smooth rhythm."},
-      {label:"Jogging Solos",distance:"150",icon:"🏃",desc:"Jog while soloing the football and try to keep a smooth rhythm."}
+      {label:"Star Jumps",distance:"150 reps",icon:"⭐",desc:"Complete the target for star jumps."},
+      {label:"Jogging Solos",distance:"50",icon:"🏃",desc:"Complete the target for jogging solos."},
+      {label:"Camogie Solo",distance:"10 steps",icon:"🏑",desc:"Complete the target for camogie solo."}
     ],
     speed:[{id:"s6a",label:"⚡ Butt Kicks",desc:"Run on the spot and kick your heels up to your bottom as fast as you can. Practice for 10 minutes. Learn the name: Butt Kicks!",youtube_id:"p7OBdAJu9E8"}],
     skills:[
@@ -154,9 +154,9 @@ const WEEKS = [
   {
     week:7, phase:"Peak", dates:"Aug 10–16",
     runs:[
-      {label:"Hurling Solo",distance:"10 steps",icon:"🏑",desc:"Solo the sliotar on the hurl for the target number of steps."},
-      {label:"Hurling Solo",distance:"20 steps",icon:"🏑",desc:"Solo the sliotar on the hurl for the target number of steps."},
-      {label:"Hurling Solo",distance:"30 steps",icon:"🏑",desc:"Solo the sliotar on the hurl for the target number of steps."}
+      {label:"Star Jumps",distance:"175 reps",icon:"⭐",desc:"Complete the target for star jumps."},
+      {label:"Jogging Solos (Each Foot)",distance:"30",icon:"🏃",desc:"Complete the target for jogging solos (each foot)."},
+      {label:"Camogie Jogging Solo",distance:"15 steps",icon:"🏑",desc:"Complete the target for camogie jogging solo."}
     ],
     speed:[{id:"s7a",label:"⚡ Wall Knee Drive",desc:"Stand facing a wall, hands on it, and drive one knee up at a time as fast as you can. Practice for 10 minutes. Learn the name: Wall Knee Drive!",youtube_id:"ZW9rjy9TgGM"}],
     skills:[
@@ -168,9 +168,9 @@ const WEEKS = [
   {
     week:8, phase:"Peak", dates:"Aug 17–23",
     runs:[
-      {label:"Run",distance:"1 km",icon:"🏃",desc:"Run, jog or walk the target distance and try to keep moving the whole way."},
-      {label:"Run",distance:"1.5 km",icon:"🏃",desc:"Run, jog or walk the target distance and try to keep moving the whole way."},
-      {label:"Run",distance:"2 km",icon:"🏃",desc:"Run, jog or walk the target distance and try to keep moving the whole way."}
+      {label:"Run",distance:"1 km",icon:"🏃",desc:"Complete the target for run."},
+      {label:"Jogging Solos (Each Foot)",distance:"50",icon:"🏃",desc:"Complete the target for jogging solos (each foot)."},
+      {label:"Camogie Solo",distance:"25 steps",icon:"🏑",desc:"Complete the target for camogie solo."}
     ],
     speed:[{id:"s8a",label:"⚡ 3 Point Start",desc:"Hands and feet on the ground — explosive go! Like a sprinter at the Olympics. Practice for 10 minutes. Learn the name: 3 Point Start!",youtube_id:"rJ7SbSqqKS0"}],
     skills:[
