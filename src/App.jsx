@@ -3401,6 +3401,8 @@ function DashboardTab({ allPlayers, onRefresh, showToast }) {
   const [addingPlayer, setAddingPlayer] = useState(false);
   const [removeTarget, setRemoveTarget] = useState(null);
   const [removeConfirmName, setRemoveConfirmName] = useState("");
+  const [dashboardModal, setDashboardModal] = useState(null);
+  const [dashboardDetails, setDashboardDetails] = useState({ registered: [], active: [], sessions: [], points: [] });
 
   useEffect(() => {
     if (!allPlayers.length) return;
@@ -3438,13 +3440,46 @@ function DashboardTab({ allPlayers, onRefresh, showToast }) {
       setClaimedIds(registeredIds);
       setRecentLog((logs || []).filter(r => !r.squad || r.squad === APP_SQUAD).slice(0, 20));
 
-      const totalSessions = comps?.length || 0;
-      const playersActive = new Set(comps?.map(r => r.player_id)).size;
-      const avgPts = ids.length ? Math.round(Object.values(pm).reduce((a,b)=>a+b,0)/ids.length) : 0;
       const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate()-7);
-      const thisWeekSessions = comps?.filter(r => r.completed_at && new Date(r.completed_at) > weekAgo).length || 0;
+      const validComps = (comps || []).filter(r => r.status !== "rejected");
+      const recentSessionRows = validComps
+        .filter(r => r.completed_at && new Date(r.completed_at) > weekAgo)
+        .sort((a,b) => new Date(b.completed_at || 0) - new Date(a.completed_at || 0));
+      const totalSessions = validComps.length;
+      const playersActive = new Set(validComps.map(r => r.player_id)).size;
+      const avgPts = ids.length ? Math.round(Object.values(pm).reduce((a,b)=>a+b,0)/ids.length) : 0;
+      const thisWeekSessions = recentSessionRows.length;
       const preTimes  = fitness?.filter(f=>f.period==="pre"  && f.lap_time).length || 0;
       const postTimes = fitness?.filter(f=>f.period==="post" && f.lap_time).length || 0;
+
+      const activeCounts = {};
+      validComps.forEach(r => { activeCounts[r.player_id] = (activeCounts[r.player_id] || 0) + 1; });
+
+      setDashboardDetails({
+        registered: [
+          ...allPlayers
+            .filter(p => registeredIds.has(p.id))
+            .sort((a,b) => a.name.localeCompare(b.name))
+            .map(p => ({ name:p.name, sub:"Registered / linked to parent account" })),
+          ...allPlayers
+            .filter(p => !registeredIds.has(p.id))
+            .sort((a,b) => a.name.localeCompare(b.name))
+            .map(p => ({ name:p.name, sub:"Not signed up yet" }))
+        ],
+        active: allPlayers
+          .filter(p => activeCounts[p.id])
+          .sort((a,b) => (activeCounts[b.id] || 0) - (activeCounts[a.id] || 0) || a.name.localeCompare(b.name))
+          .map(p => ({ name:p.name, sub:`${activeCounts[p.id]} session${activeCounts[p.id] === 1 ? "" : "s"} logged` })),
+        sessions: recentSessionRows.map(r => ({
+          name: playersById[r.player_id]?.name || "Unknown player",
+          sub: dashboardTaskLabel(r.task_key),
+          detail: `${formatDublin(r.completed_at)}${r.status === "pending" ? " - pending approval" : ""}`
+        })),
+        points: allPlayers
+          .slice()
+          .sort((a,b) => (pm[b.id] || 0) - (pm[a.id] || 0) || a.name.localeCompare(b.name))
+          .map(p => ({ name:p.name, sub:`${pm[p.id] || 0} points`, detail:`${Math.round(((pm[p.id] || 0) / maxPossible) * 100)}% complete` }))
+      });
 
       const childGenerated = allPlayers.filter(p => !!p.child_access_token).length;
       const childOpened = allPlayers.filter(p => !!p.child_first_opened_at).length;
@@ -3511,6 +3546,50 @@ function DashboardTab({ allPlayers, onRefresh, showToast }) {
       minute: "2-digit"
     });
   };
+
+  function dashboardTaskLabel(taskKey) {
+    const squadMatch = String(taskKey || "").match(/^w(\d+)-squad$/);
+    if (squadMatch) return `Week ${squadMatch[1]} - Squad Session`;
+
+    const runMatch = String(taskKey || "").match(/^w(\d+)-run(\d+)$/);
+    if (runMatch) {
+      const weekNo = Number(runMatch[1]);
+      const runIndex = Number(runMatch[2]);
+      const week = WEEKS.find(w => w.week === weekNo);
+      const run = week?.runs?.[runIndex];
+      return run ? `Week ${weekNo} - ${run.label} (${run.distance})` : `Week ${weekNo} - Run`;
+    }
+
+    const speedMatch = String(taskKey || "").match(/^w(\d+)-speed-(.+)$/);
+    if (speedMatch) {
+      const weekNo = Number(speedMatch[1]);
+      const itemId = speedMatch[2];
+      const week = WEEKS.find(w => w.week === weekNo);
+      const item = week?.speed?.find(s => String(s.id) === String(itemId));
+      return item ? `Week ${weekNo} - ${(item.label || "").replace(/^⚡\s*/, "")}` : `Week ${weekNo} - Speed`;
+    }
+
+    const skillMatch = String(taskKey || "").match(/^w(\d+)-skill-(.+)$/);
+    if (skillMatch) {
+      const weekNo = Number(skillMatch[1]);
+      const itemId = skillMatch[2];
+      const week = WEEKS.find(w => w.week === weekNo);
+      const item = week?.skills?.find(s => String(s.id) === String(itemId));
+      return item ? `Week ${weekNo} - ${(item.label || "").replace(/^[🏑⚽]\s*/, "")}` : `Week ${weekNo} - Skill`;
+    }
+
+    return String(taskKey || "Activity");
+  }
+
+  const dashboardModalTitle = dashboardModal === "registered"
+    ? "Registration status"
+    : dashboardModal === "active"
+      ? "Active players"
+      : dashboardModal === "sessions"
+        ? "Sessions logged in last 7 days"
+        : dashboardModal === "points"
+          ? "Squad points"
+          : "";
 
   const childRows = useMemo(() => {
     const weekAgo = new Date();
@@ -3655,16 +3734,17 @@ function DashboardTab({ allPlayers, onRefresh, showToast }) {
       {activeView === "overview" && <>
         <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8,marginBottom:14}}>
           {[
-            { label:"Registered",    value:`${stats.registered}/${stats.total}`, sub:`${stats.total-stats.registered} not signed up`, color:"#2e7d32" },
-            { label:"Active players",value:stats.playersActive,                  sub:"at least 1 session logged",    color:"var(--g)"  },
-            { label:"Sessions (7d)", value:stats.thisWeekSessions,               sub:"logged in last 7 days",         color:"#1565c0"   },
-            { label:"Squad avg pts", value:stats.avgPts,                         sub:`of ${maxPossible} possible`,    color:"#b8860b"   },
+            { label:"Registered",    value:`${stats.registered}/${stats.total}`, sub:`${stats.total-stats.registered} not signed up`, color:"#2e7d32", view:"registered" },
+            { label:"Active players",value:stats.playersActive,                  sub:"at least 1 session logged",    color:"var(--g)",  view:"active"     },
+            { label:"Sessions (7d)", value:stats.thisWeekSessions,               sub:"logged in last 7 days",         color:"#1565c0",   view:"sessions"   },
+            { label:"Squad avg pts", value:stats.avgPts,                         sub:`of ${maxPossible} possible`,    color:"#b8860b",   view:"points"     },
           ].map(s=>(
-            <div key={s.label} style={{background:"white",borderRadius:12,padding:"12px 14px",border:"1px solid #f0dede"}}>
+            <button key={s.label} onClick={()=>setDashboardModal(s.view)} style={{background:"white",borderRadius:12,padding:"12px 14px",border:"1px solid #f0dede",textAlign:"left",cursor:"pointer",fontFamily:"inherit"}}>
               <div style={{fontSize:10,color:"var(--muted)",textTransform:"uppercase",letterSpacing:"0.07em",marginBottom:4}}>{s.label}</div>
               <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:32,color:s.color,lineHeight:1}}>{s.value}</div>
               <div style={{fontSize:11,color:"var(--muted)",marginTop:3}}>{s.sub}</div>
-            </div>
+              <div style={{fontSize:10,color:s.color,fontWeight:900,marginTop:6}}>Tap to view</div>
+            </button>
           ))}
         </div>
 
@@ -3911,6 +3991,38 @@ function DashboardTab({ allPlayers, onRefresh, showToast }) {
           </div>
         </div>
       )}
+    {dashboardModal && (
+      <div onClick={()=>setDashboardModal(null)} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.45)",zIndex:9999,display:"flex",alignItems:"center",justifyContent:"center",padding:16}}>
+        <div onClick={(e)=>e.stopPropagation()} style={{background:"white",borderRadius:18,width:"min(520px,100%)",maxHeight:"82vh",overflow:"hidden",boxShadow:"0 18px 50px rgba(0,0,0,0.25)"}}>
+          <div style={{background:"linear-gradient(135deg,var(--g),#4a0a0e)",color:"white",padding:"14px 16px",display:"flex",justifyContent:"space-between",alignItems:"center",gap:10}}>
+            <div>
+              <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:24,color:"var(--gold)",fontWeight:900}}>{dashboardModalTitle}</div>
+              <div style={{fontSize:11,opacity:0.78}}>{APP_SQUAD} · {(dashboardDetails[dashboardModal] || []).length} item{(dashboardDetails[dashboardModal] || []).length === 1 ? "" : "s"}</div>
+            </div>
+            <button onClick={()=>setDashboardModal(null)} style={{border:0,background:"rgba(255,255,255,0.16)",color:"white",borderRadius:999,width:34,height:34,fontSize:18,cursor:"pointer"}}>×</button>
+          </div>
+          <div style={{padding:14,overflowY:"auto",maxHeight:"64vh"}}>
+            {(dashboardDetails[dashboardModal] || []).length === 0 ? (
+              <div style={{textAlign:"center",padding:"22px 10px",color:"var(--muted)",fontSize:13}}>Nothing to show yet.</div>
+            ) : (
+              (dashboardDetails[dashboardModal] || []).map((row,i)=>(
+                <div key={i} style={{display:"flex",gap:10,alignItems:"flex-start",padding:"10px 0",borderBottom:"1px solid #f2e7e7"}}>
+                  <div style={{width:30,height:30,borderRadius:"50%",background:"#f8f1f1",display:"flex",alignItems:"center",justifyContent:"center",fontWeight:900,color:"var(--g)",flex:"0 0 auto"}}>
+                    {(row.name || "?").slice(0,1)}
+                  </div>
+                  <div style={{minWidth:0}}>
+                    <div style={{fontWeight:900,color:"var(--ink)",fontSize:14}}>{row.name}</div>
+                    {row.sub && <div style={{fontSize:12,color:"var(--muted)",marginTop:2}}>{row.sub}</div>}
+                    {row.detail && <div style={{fontSize:11,color:"#7b6666",marginTop:2}}>{row.detail}</div>}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    )}
+
     </div>
   );
 }
