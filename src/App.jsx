@@ -769,13 +769,21 @@ function ChildVersionComingSoon({ player, showToast }) {
 
 function ChildSimpleView({ player, checks, playerLoaded, pts, weeksDone, showToast, onToggle }) {
   const currentWeekIndex = Math.min(Math.max(Math.floor((new Date() - new Date("2026-06-29")) / (7*24*60*60*1000)), 0), 7);
-  const w = WEEKS[currentWeekIndex];
+  const [activeWk, setActiveWk] = useState(currentWeekIndex);
+
+  useEffect(() => {
+    setActiveWk(currentWeekIndex);
+  }, [currentWeekIndex]);
+
+  const w = WEEKS[activeWk];
+  const currentW = WEEKS[currentWeekIndex];
   const ps = PHASE_STYLE[w.phase];
   const wPts = weekPts(w, checks);
   const wMax = weekMaxPts(w);
   const pct = Math.round((wPts / wMax) * 100);
   const maxPossible = WEEKS.reduce((a,wk) => a + weekMaxPts(wk), 0);
   const totalPct = Math.round((pts / maxPossible) * 100);
+  const isCurrentWeek = activeWk === currentWeekIndex;
 
   if (!playerLoaded) {
     return <div className="loader"><div className="spinner"/><span>Loading your app…</span></div>;
@@ -803,7 +811,7 @@ function ChildSimpleView({ player, checks, playerLoaded, pts, weeksDone, showToa
         </div>
         <h2>THIS WEEK'S CHALLENGE</h2>
         <div className="player-name">👤 {player.name}</div>
-        <div style={{fontSize:13,opacity:0.86,marginTop:6}}>Week {w.week} of 8 · {w.dates}</div>
+        <div style={{fontSize:13,opacity:0.86,marginTop:6}}>Week {currentW.week} of 8 · {currentW.dates}</div>
         <div className="pts-row">
           <div className="pts-box"><div className="num">{pts}</div><div className="lbl2">Total Points</div></div>
           <div className="pts-box"><div className="num">{totalPct}%</div><div className="lbl2">Progress</div></div>
@@ -813,14 +821,10 @@ function ChildSimpleView({ player, checks, playerLoaded, pts, weeksDone, showToa
 
       <div style={{background:"white",borderRadius:"var(--radius)",boxShadow:"var(--shadow)",padding:"14px 16px",marginBottom:12}}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-          <strong style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:20,color:"var(--g)"}}>This week</strong>
-          <span style={{fontSize:13,color:"var(--mid)"}}>{wPts}/{wMax} pts</span>
+          <strong style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:20,color:"var(--g)"}}>{isCurrentWeek ? "This week" : "Catch-up week"}</strong>
+          <span style={{fontSize:13,color:"var(--mid)"}}>Week {w.week} · {wPts}/{wMax} pts</span>
         </div>
         <div className="prog"><div style={{width:`${pct}%`,background:ps.accent}} /></div>
-      </div>
-
-      <div style={{background:"white",borderRadius:"var(--radius)",boxShadow:"var(--shadow)",padding:"12px 14px",marginBottom:12,textAlign:"center",fontSize:13,color:"var(--mid)",lineHeight:1.6}}>
-        Tap an activity to mark it complete. It will sync back to the parent version automatically.
       </div>
 
       <WeekDetail
@@ -834,6 +838,35 @@ function ChildSimpleView({ player, checks, playerLoaded, pts, weeksDone, showToa
         player={player}
         showToast={showToast}
       />
+
+      <div style={{background:"white",borderRadius:"var(--radius)",boxShadow:"var(--shadow)",padding:"12px 14px",marginTop:12,marginBottom:12,textAlign:"center",fontSize:13,color:"var(--mid)",lineHeight:1.6}}>
+        Tap an activity to mark it complete. It will sync back to the parent version automatically.
+      </div>
+
+      <div style={{background:"white",borderRadius:"var(--radius)",boxShadow:"var(--shadow)",padding:"14px 16px",marginBottom:12}}>
+        <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:20,color:"var(--g)",marginBottom:6,letterSpacing:"0.02em"}}>
+          Catch up on previous weeks
+        </div>
+        <div style={{background:"#fff9e8",border:"1px solid var(--gold)",borderRadius:12,padding:"10px 12px",marginBottom:12,fontSize:13,color:"var(--dark)",lineHeight:1.45,textAlign:"center"}}>
+          Missed a week? No problem — you can go back and complete unfinished activities from previous weeks. Future weeks will appear when they unlock.
+        </div>
+        <div className="week-grid" style={{marginBottom:0}}>
+          {WEEKS.slice(0, currentWeekIndex + 1).map((wk,i) => {
+            const p2 = weekPts(wk, checks);
+            const max = weekMaxPts(wk);
+            const ps2 = PHASE_STYLE[wk.phase];
+            return (
+              <div key={i} className={`wk-tile${activeWk===i?" active":""}`}
+                style={activeWk===i?{borderColor:ps2.accent}:{}}
+                onClick={() => setActiveWk(i)}>
+                <div className="wn" style={{color:ps2.accent}}>W{wk.week}</div>
+                <div className="wp">{wk.dates.split("–")[0]}</div>
+                <div className="wbar"><div className="wbar-fill" style={{width:`${Math.round(p2/max*100)}%`,background:ps2.accent}}/></div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       <div style={{textAlign:"center",fontSize:12,color:"var(--muted)",marginTop:16,paddingBottom:18}}>
         Parent Version has WhatsApp, consent, admin and full plan access.
@@ -2362,43 +2395,6 @@ function PlanTab({ checks, onToggle, player, showToast }) {
 
 // ── ProgressTab ───────────────────────────────────────────────────────────────
 
-function ShareProgressButton({ player, checks }) {
-  const pts = totalPts(checks);
-  const weeksDone = WEEKS.filter(w => weekPts(w, checks) === weekMaxPts(w)).length;
-  const streak = computeStreak(checks);
-  const maxPossible = WEEKS.reduce((a,w) => a + weekMaxPts(w), 0);
-  const pct = Math.round((pts / maxPossible) * 100);
-  const currentWeek = Math.min(Math.max(Math.floor((new Date() - new Date("2026-06-29")) / (7*24*60*60*1000)) + 1, 1), 8);
-
-  const lines = [
-    `🏑⚽ Fingallians 2017 Girls Summer Challenge 2026`,
-    ``,
-    `${player?.name || "Player"}'s Progress – Week ${currentWeek}`,
-    `⭐ ${pts} points (${pct}% of max)`,
-    weeksDone > 0 ? `✅ ${weeksDone} week${weeksDone > 1 ? "s" : ""} fully completed` : "",
-    streak > 1 ? `🔥 ${streak}-week streak!` : "",
-    ``,
-    `Fins Abú 🔴⚪️`,
-  ].filter(Boolean).join("\n");
-
-  const url = `https://wa.me/?text=${encodeURIComponent(lines)}`;
-
-  return (
-    <a href={url} target="_blank" rel="noopener noreferrer"
-      style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,
-              background:"#25D366",color:"white",borderRadius:14,padding:"12px 18px",
-              textDecoration:"none",marginBottom:14,
-              fontFamily:"'Barlow Condensed',sans-serif",fontSize:18,
-              letterSpacing:"0.04em",fontWeight:900,
-              boxShadow:"0 4px 14px rgba(37,211,102,0.3)"}}>
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-      </svg>
-      SHARE PROGRESS ON WHATSAPP
-    </a>
-  );
-}
-
 
 function AdminProgressSnapshot({ allPlayers }) {
   const [rows, setRows] = useState([]);
@@ -2653,9 +2649,7 @@ function ProgressTab({ player, checks, isAdmin, allPlayers = [] }) {
           </div>
         )}
       </div>
-
-      <ShareProgressButton player={player} checks={checks} />
-      <div style={{background:"white",borderRadius:14,padding:"14px",border:"1px solid #f0dede",width:"100%"}}>
+<div style={{background:"white",borderRadius:14,padding:"14px",border:"1px solid #f0dede",width:"100%"}}>
         <div style={{fontFamily:"'Barlow Condensed',sans-serif",fontSize:14,color:"var(--dark)",letterSpacing:"0.04em",marginBottom:12}}>ACTIVITY LOG</div>
         {loading && <div style={{textAlign:"center",color:"var(--muted)",padding:"16px 0",fontSize:13}}>Loading…</div>}
         {!loading && activityLog.length === 0 && (
