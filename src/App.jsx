@@ -1162,8 +1162,45 @@ export default function App() {
           setChecks({});
         }
       } else {
-        setPlayer(null);
-        setChecks({});
+        const adminLinkedName = ADMIN_PLAYER_NAMES[session.user.email] || ADMIN_PLAYER_NAME;
+        if (adminLinkedName) {
+          const { data: adminPlayers, error: adminPlayerError } = await sb
+            .from("players")
+            .select("id, name, squad, child_access_token")
+            .eq("squad", APP_SQUAD)
+            .ilike("name", adminLinkedName)
+            .limit(1);
+
+          if (adminPlayerError) {
+            console.error("admin player lookup failed:", adminPlayerError);
+          }
+
+          const adminPlayer = (adminPlayers || [])[0];
+
+          if (adminPlayer) {
+            await sb
+              .from("parent_players")
+              .upsert({ user_id: session.user.id, player_id: adminPlayer.id }, { onConflict: "user_id,player_id" });
+
+            setPlayer(adminPlayer);
+            const { data: comps } = await sb
+              .from("task_completions")
+              .select("task_key,status")
+              .eq("player_id", adminPlayer.id);
+
+            const c = {};
+            (comps || []).forEach(r => {
+              c[r.task_key] = r.status || "approved";
+            });
+            setChecks(c);
+          } else {
+            setPlayer(null);
+            setChecks({});
+          }
+        } else {
+          setPlayer(null);
+          setChecks({});
+        }
       }
     } catch(e) {
       console.error("loadPlayerData error:", e);
@@ -1367,7 +1404,7 @@ export default function App() {
     { id:"home",    label:"Home"     },
     { id:"plan",    label:"Plan"     },
     { id:"progress",label:"Progress" },
-    ...(isSuperAdmin ? [{ id:"dashboard", label:"Dashboard" }] : []),
+    ...(isAdmin ? [{ id:"dashboard", label:"Dashboard" }] : []),
   ];
 
   return (
@@ -1422,8 +1459,8 @@ export default function App() {
           <ProgressTab player={player} checks={checks} isAdmin={isAdmin} allPlayers={allPlayers} />
         )}
 
-        {session && isSuperAdmin && tab === "dashboard" && (
-          <DashboardTab allPlayers={allPlayers} onRefresh={loadAllPlayers} showToast={showToast} />
+        {session && isAdmin && tab === "dashboard" && (
+          <DashboardTab allPlayers={allPlayers} onRefresh={loadAllPlayers} showToast={showToast} reviewerEmail={session.user.email} />
         )}
       </div>
       {toast && <div className="toast">{toast}</div>}
@@ -3386,7 +3423,7 @@ function ConsentLog() {
   );
 }
 
-function DashboardTab({ allPlayers, onRefresh, showToast }) {
+function DashboardTab({ allPlayers, onRefresh, showToast, reviewerEmail }) {
   const [stats,      setStats]      = useState(null);
   const [loading,    setLoading]    = useState(true);
   const [recentLog,  setRecentLog]  = useState([]);
@@ -3404,6 +3441,7 @@ function DashboardTab({ allPlayers, onRefresh, showToast }) {
   const [removeConfirmName, setRemoveConfirmName] = useState("");
   const [dashboardModal, setDashboardModal] = useState(null);
   const [dashboardDetails, setDashboardDetails] = useState({ registered: [], active: [], sessions: [], points: [] });
+  const [dashboardRefreshKey, setDashboardRefreshKey] = useState(0);
 
   useEffect(() => {
     if (!allPlayers.length) return;
@@ -3491,7 +3529,23 @@ function DashboardTab({ allPlayers, onRefresh, showToast }) {
                  childGenerated, childOpened, childActiveWeek });
       setLoading(false);
     });
-  }, [allPlayers]);
+  }, [allPlayers, dashboardRefreshKey]);
+
+  useEffect(() => {
+    if (!allPlayers.length) return;
+    const channel = sb
+      .channel(`dashboard-bonus-review-${APP_SQUAD}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "task_completions" },
+        () => setDashboardRefreshKey(k => k + 1)
+      )
+      .subscribe();
+
+    return () => {
+      sb.removeChannel(channel);
+    };
+  }, [allPlayers.length]);
 
   const currentWeek = Math.min(Math.max(Math.floor((new Date()-new Date("2026-06-29"))/(7*24*60*60*1000))+1,1),8);
   const sortedPlayers = allPlayers.slice().sort((a,b)=>(ptsMap[b.id]||0)-(ptsMap[a.id]||0));
@@ -3663,7 +3717,7 @@ function DashboardTab({ allPlayers, onRefresh, showToast }) {
       p_player_id: row.player_id,
       p_task_key: row.task_key,
       p_status: nextStatus,
-      p_reviewed_by: SUPER_ADMIN_EMAIL
+      p_reviewed_by: reviewerEmail || SUPER_ADMIN_EMAIL
     });
 
     if (rpcResult.error) {
@@ -3674,7 +3728,7 @@ function DashboardTab({ allPlayers, onRefresh, showToast }) {
         .update({
           status: nextStatus,
           reviewed_at: new Date().toISOString(),
-          reviewed_by: SUPER_ADMIN_EMAIL
+          reviewed_by: reviewerEmail || SUPER_ADMIN_EMAIL
         })
         .eq("player_id", row.player_id)
         .eq("task_key", row.task_key);
@@ -3690,7 +3744,7 @@ function DashboardTab({ allPlayers, onRefresh, showToast }) {
 
     const player = allPlayers.find(p => p.id === row.player_id);
     await logAudit(
-      SUPER_ADMIN_EMAIL,
+      reviewerEmail || SUPER_ADMIN_EMAIL,
       player,
       decision === "approved" ? "bonus_approved" : "bonus_returned",
       `Week ${row.week} Squad Session ${decision === "approved" ? "approved" : "returned"}`,
@@ -3699,6 +3753,8 @@ function DashboardTab({ allPlayers, onRefresh, showToast }) {
     );
 
     setPendingBonus(list => list.filter(x => !(x.player_id === row.player_id && x.task_key === row.task_key)));
+    setDashboardRefreshKey(k => k + 1);
+    onRefresh?.();
 
     if (decision === "approved") {
       setPtsMap(pm => ({ ...pm, [row.player_id]: (pm[row.player_id] || 0) + PTS.squad }));
