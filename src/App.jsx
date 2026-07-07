@@ -1,28 +1,21 @@
 import { useEffect, useState } from "react";
 
-const NEW_APP_URL = "https://fingallians-shared-platform.vercel.app/";
+const OLD_APP_KEY = "2017-boys"; // change per old app: 2014-boys, 2015-girls, 2017-boys, 2017-girls
+const NEW_APP_URL = `https://fingallians-shared-platform.vercel.app/?mode=signup&from_app=${OLD_APP_KEY}`;
 const LOGO = "/favicon.png";
 
 export default function App() {
-  const [seconds, setSeconds] = useState(3);
+  const [seconds, setSeconds] = useState(8);
 
-  function goToNewApp() {
-    localStorage.setItem("redirect_seen", "true");
+  function continueToNewApp() {
     window.location.replace(NEW_APP_URL);
   }
-
-  useEffect(() => {
-    if (localStorage.getItem("redirect_seen")) {
-      window.location.replace(NEW_APP_URL);
-    }
-  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setSeconds((current) => {
         if (current <= 1) {
           clearInterval(timer);
-          localStorage.setItem("redirect_seen", "true");
           window.location.replace(NEW_APP_URL);
           return 0;
         }
@@ -51,10 +44,10 @@ export default function App() {
       <div
         style={{
           width: "100%",
-          maxWidth: 650,
+          maxWidth: 680,
           background: "#ffffff",
           borderRadius: 28,
-          padding: 40,
+          padding: 36,
           textAlign: "center",
           border: "5px solid #D4AF37",
           boxShadow: "0 25px 70px rgba(0,0,0,.35)",
@@ -64,9 +57,9 @@ export default function App() {
           src={LOGO}
           alt="Fingallians Summer Fitness Challenge"
           style={{
-            width: 240,
+            width: 220,
             maxWidth: "80%",
-            marginBottom: 20,
+            marginBottom: 18,
           }}
         />
 
@@ -74,32 +67,28 @@ export default function App() {
           style={{
             margin: 0,
             color: "#9B001C",
-            fontSize: 38,
+            fontSize: 36,
             fontWeight: 900,
           }}
         >
-          Welcome to the New App!
+          We’ve Updated the App!
         </h1>
 
         <p
           style={{
-            fontSize: 21,
+            fontSize: 20,
             color: "#444",
-            lineHeight: 1.6,
+            lineHeight: 1.55,
             marginTop: 18,
           }}
         >
-          We've upgraded the
-          <br />
-          <strong>Fingallians Summer Fitness Challenge</strong>
-          <br />
-          into one shared platform.
+          The Fingallians Fitness Challenge has moved to one shared app.
         </p>
 
         <div
           style={{
-            marginTop: 30,
-            marginBottom: 30,
+            marginTop: 26,
+            marginBottom: 26,
             background: "#FFF8EF",
             border: "2px solid #D4AF37",
             borderRadius: 18,
@@ -107,31 +96,29 @@ export default function App() {
             textAlign: "left",
           }}
         >
-          <p style={{ margin: "12px 0", fontSize: 17 }}>
-            ✅ All player progress has been safely transferred.
+          <p style={{ margin: "12px 0", fontSize: 18, fontWeight: 800 }}>
+            👉 On the next screen:
           </p>
 
           <p style={{ margin: "12px 0", fontSize: 17 }}>
-            ✅ Runs, XP, badges and achievements are all still there.
+            1. Enter the <strong>same email address</strong> you used before.
           </p>
 
           <p style={{ margin: "12px 0", fontSize: 17 }}>
-            👨‍👩‍👧 Parents should continue using the{" "}
-            <strong>same email address</strong>.
+            2. Add a <strong>new password</strong>.
           </p>
 
           <p style={{ margin: "12px 0", fontSize: 17 }}>
-            🔐 The first time you sign in you'll be asked to create a password.
+            3. Click <strong>Create Password / Continue</strong>.
           </p>
 
           <p style={{ margin: "12px 0", fontSize: 17 }}>
-            ❤️ Once you've created your password your linked children will
-            appear automatically.
+            ✅ Your children, progress, runs, XP and badges should still be there.
           </p>
         </div>
 
         <button
-          onClick={goToNewApp}
+          onClick={continueToNewApp}
           style={{
             width: "100%",
             padding: "18px",
@@ -140,17 +127,17 @@ export default function App() {
             background: "#B30024",
             color: "#fff",
             fontSize: 22,
-            fontWeight: 800,
+            fontWeight: 900,
             cursor: "pointer",
             boxShadow: "0 10px 30px rgba(179,0,36,.35)",
           }}
         >
-          Continue to the New App →
+          Continue and Add Password →
         </button>
 
         <p
           style={{
-            marginTop: 22,
+            marginTop: 20,
             color: "#666",
             fontSize: 15,
           }}
@@ -158,18 +145,6 @@ export default function App() {
           Redirecting automatically in{" "}
           <strong>{seconds}</strong> second{seconds === 1 ? "" : "s"}...
         </p>
-
-        <div
-          style={{
-            marginTop: 24,
-            borderTop: "1px solid #eee",
-            paddingTop: 16,
-            color: "#888",
-            fontSize: 14,
-          }}
-        >
-          Fingallians GAA Club • Est. 1884
-        </div>
       </div>
     </div>
   );
