@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const OLD_APP_KEY = "2017-boys"; // change per old app: 2014-boys, 2015-girls, 2017-boys, 2017-girls
+const OLD_APP_KEY = "2017-girls"; // change per old app: 2014-boys, 2015-girls, 2017-boys, 2017-girls
 const NEW_APP_URL = `https://fingallians-shared-platform.vercel.app/?mode=signup&from_app=${OLD_APP_KEY}`;
 const LOGO = "/favicon.png";
 
